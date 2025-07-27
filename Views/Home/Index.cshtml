@@ -6,18 +6,17 @@
     
         <!-- Header -->
         <div class="absolute top-0 max-w-sm container mx-auto bg-orange-500 text-white rounded-br-[125px] h-[250px] flex flex-row justify-between items-start px-6 py-6 shadow-lg z-20">
-            <div class="flex flex-col gap-1">
-                @* <div class="flex items-center gap-2 text-base font-medium">
-                    <span>Hallo</span>
-                    <span>👋</span>
-                </div>
-                <h1 class="text-xl font-bold leading-tight">Bonny Agung Putra</h1>
-                <p class="text-base opacity-90">Driver UPST</p> *@
+            <div class="flex flex-col">
+                <h1 class="text-md font-bold leading-tight text-white">Bonny Agung Putra</h1>
+                <p class="text-xs opacity-90 font-medium text-orange-100">Driver UPST</span></p>
                 <!-- Your Location -->
-            <p class="text-sm mt-2 opacity-90">Your Location:</p>
-               <p id="userLocation" class="font-semibold text-sm tracking-wide cursor-pointer underline">
-                Mendeteksi lokasi...
-            </p>
+                <div class="mt-5 flex items-center gap-2">
+                    <i class="w-4 h-4 text-white" data-lucide="map-pin"></i>
+                    <span class="text-sm opacity-90">Lokasi Anda:</span>
+                </div>
+                <p id="userLocation" class="font-semibold text-sm tracking-wide cursor-pointer underline text-white hover:text-orange-200 transition">
+                    Mendeteksi lokasi...
+                </p>
             </div>
             <div class="flex items-center justify-center">
                 <div class="w-14 h-14 rounded-full border-4 border-white overflow-hidden shadow-md">
@@ -27,7 +26,7 @@
         </div>
 
         <!-- SPJ Data Card -->
-        <div class="bg-green-500 text-white mx-4 px-6 py-6 mt-32 rounded-2xl relative overflow-hidden shadow-lg z-21">
+        <div class="bg-green-500 text-white mx-4 px-6 py-6 mt-40 rounded-2xl relative overflow-hidden shadow-lg z-21">
             <!-- Background pattern -->
             <div class="absolute right-0 bottom-0 opacity-30 pointer-events-none select-none" style="width: 160px; height: 160px;">
                 <img src="@Url.Content("~/tree.svg")" alt="tree" class="w-full h-full object-contain">
