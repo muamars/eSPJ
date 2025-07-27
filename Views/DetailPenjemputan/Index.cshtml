@@ -1,0 +1,87 @@
+@{
+    ViewData["Title"] = "Detail Penjemputan";
+}
+
+<div class="max-w-sm mx-auto bg-white min-h-screen">
+       <!-- Header -->
+        <div class="bg-orange-500 text-white px-4 py-6 rounded-b-3xl relative pb-12">
+            <div class="flex items-center justify-center relative">
+                <a href="@Url.Action("Index", "Home")" class="absolute left-0">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"></polyline>
+                    </svg>
+                </a>
+                <h1 class="text-xl font-bold">Detail Lokasi</h1>
+            </div>
+        </div>
+
+        <!-- License Plate - Overlapping -->
+        <div class="flex justify-center -mt-10 mb-6 relative">
+            <div class="bg-orange-100 border border-orange-400 px-4 py-2 rounded-xl shadow flex flex-col items-center">
+                <span class="text-green-700 font-bold text-lg">B 9632 TOR</span>
+                <span class="text-orange-500 text-xs mt-1">(JRC 005)</span>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="px-6 space-y-3">
+            <!-- Status Badge -->
+            <div class="flex justify-center">
+                <span class="inline-flex items-center px-4 py-1 bg-gradient-to-r from-green-500 to-green-400 text-white rounded-full text-xs font-semibold shadow-md">
+                    PENGANGKUTAN
+                </span>
+            </div>
+
+            <!-- Company Info -->
+            <div class="text-center space-y-2">
+                <h2 class="text-xl font-extrabold text-gray-800 tracking-wide drop-shadow">CV Tri Berkah Sejahtera</h2>
+                <p class="text-gray-500 text-sm bg-gray-100 rounded px-2 py-1 inline-block shadow">SPJ/07-2025/PKM/000476</p>
+            </div>
+
+            <!-- Address -->
+            <div class="space-y-2">
+                <h3 class="font-semibold text-gray-800 text-center tracking-wider">Alamat</h3>
+                <p class="text-gray-600 text-sm text-center leading-relaxed px-4">
+                    Kp. Pertanian II Rt.004 Rw.001 Kel. Klender Kec, Duren Sawit, Kota Adm. Jakarta Timur 13470
+                </p>
+            </div>
+
+            <!-- Odometer Section -->
+            <div class="space-y-6">
+                <h3 class="font-bold text-gray-800 text-center text-lg tracking-wide">Masukkan Odometer</h3>
+                <div class="flex justify-center">
+                    <div class="relative flex items-center justify-center">
+                        <img src="@Url.Content("~/odo_simple.svg")" class="overflow-visible drop-shadow-lg scale-110" alt="">
+                        <!-- Digital display -->
+                        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+                            <input type="text" maxlength="6" class="bg-gray-900 text-green-400 px-4 py-2 rounded-lg text-lg font-mono tracking-widest text-center w-36 outline-none border-2 border-green-400 focus:ring-2 focus:ring-orange-400 transition" placeholder="000000" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-6">
+                <button class="w-full bg-gradient-to-r from-orange-500 to-orange-400 text-white py-3 rounded-xl font-bold text-lg shadow-xl hover:scale-105 hover:bg-orange-600 transition-all duration-200 flex items-center justify-center gap-2">
+
+                    Submit
+                </button>
+            </div>
+        </div>
+        <partial name="~/Views/Shared/Components/_Navigation.cshtml" />
+    </div>
+
+<register-block dynamic-section="scripts" key="jsDetailPenjemputan">
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var odoInput = document.querySelector('input[maxlength="6"]');
+    if (odoInput) {
+      odoInput.addEventListener('focus', function() {
+        setTimeout(function() {
+          odoInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 300); // delay agar keyboard muncul dulu
+      });
+    }
+  });
+</script>
+</register-block>

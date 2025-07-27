@@ -1,0 +1,8 @@
+bin/
+obj/
+publish/
+wwwroot/lib/
+appsettings.Development.json
+*.user
+*.db
+node_modules/
