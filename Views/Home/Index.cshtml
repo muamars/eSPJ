@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Ambil dari localStorage jika ada
+    // Ambil dari localStorage kalo ada
     const savedAddress = localStorage.getItem("user_address");
     if (savedAddress) {
         userLocationEl.textContent = savedAddress;
@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
         getLocationUpdate(); // Pertama kali ambil lokasi
     }
 
-    // ✅ Klik untuk update lokasi
+    // Update Lokasi cuy
     userLocationEl.addEventListener("click", function () {
         getLocationUpdate();
     });
