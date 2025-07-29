@@ -1,0 +1,153 @@
+@{
+    ViewData["Title"] = "History - DLH";
+}
+
+<div class="max-w-sm mx-auto bg-gray-50 min-h-screen">
+    <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 sticky top-0 z-10 shadow-lg">
+        <div class="flex items-center justify-between">
+            <a href="@Url.Action("Index", "Home")" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200">
+                <i class="w-5 h-5" data-lucide="chevron-left"></i>
+            </a>
+            <h1 class="text-lg font-bold">Riwayat Perjalanan</h1>
+            <div class="w-9"></div>
+        </div>
+    </div>
+    
+    @{
+        var spjList = new[]
+        {
+            new {
+                Id = 1,
+                NoSpj = "SPJ/07-2025/PKM/000478",
+                Plat = "B 5678 ABC",
+                Kode = "JRC 007",
+                Tujuan = "Bantar Gebang",
+                Status = "In Progress",
+                Tanggal = "28 Jul 2025",
+                Waktu = "16:45"
+            },
+            new {
+                Id = 2,
+                NoSpj = "SPJ/07-2025/PKM/000476",
+                Plat = "B 9632 TOR",
+                Kode = "JRC 005",
+                Tujuan = "RDF Rorotan",
+                Status = "Completed",
+                Tanggal = "27 Jul 2025",
+                Waktu = "14:30"
+            },
+            new {
+                Id = 3,
+                NoSpj = "SPJ/07-2025/PKM/000477",
+                Plat = "B 1234 XYZ",
+                Kode = "JRC 006",
+                Tujuan = "RDF Pesanggarahan",
+                Status = "Completed",
+                Tanggal = "26 Jul 2025",
+                Waktu = "09:15"
+            },
+            new {
+                Id = 4,
+                NoSpj = "SPJ/07-2025/PKM/000479",
+                Plat = "B 9876 DEF",
+                Kode = "JRC 008",
+                Tujuan = "RDF Sunter",
+                Status = "Completed",
+                Tanggal = "25 Jul 2025",
+                Waktu = "11:20"
+            },
+            new {
+                Id = 5,
+                NoSpj = "SPJ/07-2025/PKM/000480",
+                Plat = "B 4321 GHI",
+                Kode = "JRC 009",
+                Tujuan = "Bantar Gebang",
+                Status = "Completed",
+                Tanggal = "24 Jul 2025",
+                Waktu = "08:45"
+            }
+        };
+    }
+
+    <div class="px-4 py-4 space-y-3">
+        @foreach (var spj in spjList)
+        {
+            <a href="@Url.Action("Details", "History", new { id = spj.Id })" class="block">
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-orange-200 transition-all duration-300 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-orange-500"></div>
+                
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-2 h-2 bg-orange-400 rounded-full"></div>
+                            <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">No. SPJ</span>
+                        </div>
+                        <div class="font-bold text-gray-900 text-sm">@spj.NoSpj</div>
+                    </div>
+                    <div class="flex flex-col items-end gap-1">
+                        @if (spj.Status == "Completed")
+                        {
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                Selesai
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                                <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                Berlangsung
+                            </span>
+                        }
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-xl p-3 mb-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="w-5 h-5 text-orange-600" data-lucide="car"></i>
+                            </div>
+                            <div>
+                                <div class="font-bold text-gray-900 text-sm">@spj.Plat</div>
+                                <div class="text-xs text-gray-500">@spj.Kode</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-gray-500">@spj.Tanggal</div>
+                            <div class="text-xs font-medium text-gray-700">@spj.Waktu</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="w-4 h-4 text-green-600" data-lucide="map-pin"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-gray-500 mb-1">Tujuan</div>
+                        <div class="font-semibold text-gray-900 text-sm">@spj.Tujuan</div>
+                    </div>
+                    <div class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <i class="w-4 h-4 text-gray-400" data-lucide="chevron-right"></i>
+                    </div>
+                </div>
+                </div>
+            </a>
+        }
+    </div>
+
+    <!-- Bottom Navigation -->
+    <partial name="~/Views/Shared/Components/_Navigation.cshtml" />
+    
+    <!-- Kalau butuh tampilan kosong (jika tidak ada data) -->
+
+    @* <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <i class="w-12 h-12 text-gray-400" data-lucide="clock"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum Ada Riwayat</h3>
+        <p class="text-gray-500 text-center text-sm">Riwayat perjalanan Anda akan muncul di sini setelah melakukan perjalanan pertama.</p>
+    </div> *@
+   
+</div>

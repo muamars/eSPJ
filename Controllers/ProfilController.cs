@@ -11,7 +11,5 @@ namespace eSPJ.Controllers
         {
             return View();
         }
-
-       
     }
 }

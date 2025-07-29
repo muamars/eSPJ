@@ -12,6 +12,11 @@ namespace eSPJ.Controllers
             return View();
         }
 
-       
+        [HttpGet("batal")]
+        public IActionResult Batal()
+        {
+            return View("~/Views/DetailPenjemputan/Batal.cshtml");
+        }
+
     }
 }
