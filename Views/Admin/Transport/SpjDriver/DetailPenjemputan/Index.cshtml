@@ -3,8 +3,7 @@
     ViewData["Title"] = "Detail Penjemputan";
 }
 
-<div class="max-w-sm mx-auto bg-white min-h-screen">
-       <!-- Header -->
+<div class="max-w-sm mx-auto min-h-screen">
         <div class="bg-orange-500 text-white px-4 py-6 rounded-b-3xl relative pb-12">
             <div class="flex items-center justify-center relative">
                 <a href="@Url.Action("Index", "Home")" class="absolute left-0 p-1 hover:bg-white/10 rounded-full transition-colors">
@@ -14,7 +13,6 @@
             </div>
         </div>
 
-        <!-- License Plate - Overlapping -->
         <div class="flex justify-center -mt-10 mb-6 relative">
             <div class="bg-orange-100 border border-orange-400 px-4 py-2 rounded-xl shadow flex flex-col items-center">
                 <span class="text-green-700 font-bold text-lg">B 9632 TOR</span>
@@ -22,22 +20,18 @@
             </div>
         </div>
 
-        <!-- Content -->
-        <div class="px-6 space-y-3">
-            <!-- Status Badge -->
+        <div class="px-6">
             <div class="flex justify-center">
                 <span class="inline-flex items-center px-4 py-1 bg-gradient-to-r from-green-500 to-green-400 text-white rounded-full text-xs font-semibold shadow-md">
                     PENGANGKUTAN
                 </span>
             </div>
 
-            <!-- Company Info -->
             <div class="text-center space-y-2">
                 <h2 class="text-xl font-extrabold text-gray-800 tracking-wide drop-shadow">CV Tri Berkah Sejahtera</h2>
                 <p class="text-gray-500 text-sm bg-gray-100 rounded px-2 py-1 inline-block shadow">SPJ/07-2025/PKM/000476</p>
             </div>
 
-            <!-- Address -->
             <div class="space-y-2">
                 <h3 class="font-semibold text-gray-800 text-center tracking-wider">Alamat</h3>
                 <p class="text-gray-600 text-sm text-center leading-relaxed px-4">
@@ -45,47 +39,101 @@
                 </p>
             </div>
 
-            <!-- Odometer Section -->
             <div class="space-y-6">
-                <h3 class="font-bold text-gray-800 text-center text-lg tracking-wide">Masukkan Odometer</h3>
-                <div class="flex justify-center">
-                    <div class="relative flex items-center justify-center">
-                        <img src="@Url.Content("~/driver/odo_simple.svg")" class="overflow-visible drop-shadow-lg scale-110" alt="">
-                        <!-- Digital display -->
-                        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-                            <input type="text" maxlength="7" class="bg-gray-900 text-green-400 px-4 py-2 rounded-lg text-lg font-mono tracking-widest text-center w-36 outline-none border-2 border-green-400 focus:ring-2 focus:ring-orange-400 transition" placeholder="000000" />
+                <form method="post" enctype="multipart/form-data">
+                    <h3 class="font-bold text-gray-800 text-center text-lg tracking-wide mb-4">Masukkan Odometer</h3>
+                    <div class="flex justify-center">
+                        <div class="relative flex items-center justify-center">
+                            <img src="@Url.Content("~/driver/odo_simple.svg")" class="overflow-visible drop-shadow-lg scale-110" alt="">
+                            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+                                <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="7" name="Odometer" id="input-odometer" class="bg-gray-900 text-green-400 px-4 py-2 rounded-lg text-lg font-mono tracking-widest text-center w-36 outline-none border-2 border-green-400 focus:ring-2 focus:ring-orange-400 transition" placeholder="000000" />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="pt-6 flex gap-3">
-                <a href="@Url.Action("Batal", "DetailPenjemputan")" class="w-full bg-gray-200 text-gray-700 py-3 rounded-xl font-bold text-lg shadow hover:scale-105 hover:bg-gray-300 transition-all duration-200 flex items-center justify-center gap-2">
-                    Batal Angkut
-                </a>
-                <button class="hover:cursor-pointer w-full bg-gradient-to-r from-orange-500 to-orange-400 text-white py-3 rounded-xl font-bold text-lg shadow-xl hover:scale-105 hover:bg-orange-600 transition-all duration-200 flex items-center justify-center gap-2">
-                    Submit
-                </button>
-
-            </div>
+                    <input type="hidden" name="Latitude" id="input-latitude" />
+                    <input type="hidden" name="Longitude" id="input-longitude" />
+                    <input type="hidden" name="AlamatJalan" id="input-alamat-jalan" />
+                    <div class="pt-6 flex gap-3">
+                        <a href="@Url.Action("Batal", "DetailPenjemputan")" class="w-full bg-red-500 text-white py-3 rounded-xl font-bold text-lg shadow hover:scale-105 hover:bg-red-600 transition-all duration-200 flex items-center justify-center gap-2">
+                            Batal Angkut
+                        </a>
+                        <button type="submit" class="hover:cursor-pointer w-full bg-gradient-to-r from-orange-500 to-orange-400 text-white py-3 rounded-xl font-bold text-lg shadow-xl hover:scale-105 hover:bg-orange-600 transition-all duration-200 flex items-center justify-center gap-2">
+                            Submit
+                        </button>
+                    </div>
+                </form>
         </div>
 
-        <!-- Bottom Navigation -->
         <partial name="~/Views/Admin/Transport/SpjDriver/Shared/Components/_Navigation.cshtml" />
     </div>
 
 <register-block dynamic-section="scripts" key="jsDetailPenjemputan">
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var odoInput = document.querySelector('input[maxlength="6"]');
+document.addEventListener('DOMContentLoaded', function() {
+    var odoInput = document.getElementById('input-odometer');
     if (odoInput) {
-      odoInput.addEventListener('focus', function() {
-        setTimeout(function() {
-          odoInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 300);
-      });
+        odoInput.addEventListener('focus', function() {
+            setTimeout(function() {
+                odoInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        });
+        odoInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+        odoInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            var text = (e.clipboardData || window.clipboardData).getData('text');
+            this.value = text.replace(/[^0-9]/g, '');
+        });
+        odoInput.addEventListener('keypress', function(e) {
+            if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
     }
-  });
+
+    const inputLat = document.getElementById('input-latitude');
+    const inputLng = document.getElementById('input-longitude');
+    const inputAlamat = document.getElementById('input-alamat-jalan');
+
+    function reverseGeocode(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+                const address = data.display_name || `${lat}, ${lng}`;
+                if (inputLat) inputLat.value = lat;
+                if (inputLng) inputLng.value = lng;
+                if (inputAlamat) inputAlamat.value = address;
+            })
+            .catch(() => {
+                if (inputLat) inputLat.value = lat;
+                if (inputLng) inputLng.value = lng;
+                if (inputAlamat) inputAlamat.value = `${lat}, ${lng}`;
+            });
+    }
+
+    function getLocationUpdate() {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const lat = position.coords.latitude.toFixed(6);
+                    const lng = position.coords.longitude.toFixed(6);
+                    reverseGeocode(lat, lng);
+                },
+                function () {
+                    if (inputLat) inputLat.value = '';
+                    if (inputLng) inputLng.value = '';
+                    if (inputAlamat) inputAlamat.value = 'Lokasi tidak diizinkan';
+                }
+            );
+        } else {
+            if (inputLat) inputLat.value = '';
+            if (inputLng) inputLng.value = '';
+            if (inputAlamat) inputAlamat.value = 'Browser tidak mendukung lokasi';
+        }
+    }
+
+    getLocationUpdate();
+});
 </script>
 </register-block>

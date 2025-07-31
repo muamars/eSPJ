@@ -3,9 +3,8 @@
     ViewData["Title"] = "Submit Foto Muatan";
 }
 
-
 <div class="max-w-sm mx-auto bg-white min-h-screen">
-    <div class="bg-orange-500 text-white px-3 py-4 rounded-b-2xl relative pb-12">
+    <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-4 rounded-b-2xl relative pb-12">
         <div class="flex items-center justify-between">
             <a href="@Url.Action("Index", "Home")" class="p-1 hover:bg-white/10 rounded-full transition-colors">
                 <i class="w-5 h-5" data-lucide="chevron-left"></i>
@@ -15,58 +14,256 @@
         </div>
     </div>
 
-
-    <div class="px-4 py-6">
+    <div class="px-4 py-6 -mt-6 relative z-10">
         <div class="bg-white rounded-2xl p-5 border border-gray-100">
-        <div class="flex items-center gap-3 mb-4">
-            <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                <i class="w-5 h-5 text-orange-600" data-lucide="file-text"></i>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center">
+                    <i class="w-6 h-6 text-orange-600" data-lucide="camera"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900">Foto Muatan Kendaraan</h2>
+                    <p class="text-xs text-gray-500 flex items-center gap-1">
+                        <i class="w-3 h-3" data-lucide="info"></i>
+                        Optional
+                    </p>
+                </div>
             </div>
+            
+            <div class="upload-area border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-400 transition-colors cursor-pointer" id="upload-area">
+                <input type="file" name="FotoKondisiKendaraan" accept="image/jpeg,image/png" class="hidden" id="foto-upload">
+                <label for="foto-upload" class="cursor-pointer w-full block">
+                    <div class="relative w-full h-32 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3 overflow-hidden preview-container" id="preview-container">
+                        <div id="default-state">
+                            <div class="upload-icon-container">
+                                <i class="w-8 h-8 text-orange-600" data-lucide="upload-cloud" id="preview-icon"></i>
+                            </div>
+                        </div>
+                        <img id="preview-image" src="#" alt="Preview" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;" />
+                        
+                        <!-- Overlay buttons -->
+                        <div class="preview-overlay" id="preview-overlay" style="display:none;">
+                            <button type="button" class="overlay-btn" id="edit-preview" aria-label="Edit gambar">
+                                <i class="w-5 h-5" data-lucide="edit-3"></i>
+                            </button>
+                            <button type="button" class="overlay-btn delete" id="close-preview" aria-label="Hapus gambar">
+                                <i class="w-5 h-5" data-lucide="trash-2"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- File info -->
+                        <div class="file-info" id="file-info" style="display:none;">
+                            <span id="file-name">image.jpg</span> • <span id="file-size">0 MB</span>
+                        </div>
+                        
+                        <!-- Upload progress -->
+                        <div class="upload-progress" id="upload-progress"></div>
+                    </div>
+                    <div id="upload-text">
+                        <p class="text-sm text-gray-600 font-medium">Tap untuk unggah foto</p>
+                        <p class="text-xs text-gray-400 mt-1">atau drag & drop file di sini</p>
+                        <p class="text-xs text-gray-400 mt-2 flex items-center justify-center gap-1">
+                            <i class="w-3 h-3" data-lucide="file-type"></i>
+                            JPG, JPEG, PNG maksimal 10MB
+                        </p>
+                    </div>
+                </label>
+            </div>
+
+            <div class="mt-6 mb-2">
+                <div class="location-badge rounded-2xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
+                            <i class="w-4 h-4 text-blue-600" data-lucide="map-pin"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700">Lokasi Anda:</span>
+                        <button type="button" id="refresh-location" class="ml-auto p-1 hover:bg-gray-100 rounded-full transition-colors">
+                            <i class="w-4 h-4 text-gray-500" data-lucide="refresh-cw"></i>
+                        </button>
+                    </div>
+                    <p id="userLocationSubmit" class="font-semibold text-xs tracking-wide cursor-pointer underline text-orange-600 hover:text-orange-800 transition mt-1 flex items-center gap-2">
+                        <span>Mendeteksi lokasi...</span>
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Klik lokasi di atas untuk update posisi Anda</p>
+                </div>
+            </div>
+
             <div>
-                <h2 class="text-lg font-bold text-gray-900">Foto Muatan Kendaraan</h2>
-                <p class="text-xs text-gray-500">Optional</p>
+                <form asp-action="UploadFotoMuatan" method="post" enctype="multipart/form-data" class="mt-6" id="upload-form">
+                    <input type="hidden" name="Latitude" id="input-latitude" />
+                    <input type="hidden" name="Longitude" id="input-longitude" />
+                    <input type="hidden" name="AlamatJalan" id="input-alamat-jalan" />
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" id="submit-btn"
+                                class="floating-button flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-3 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg flex items-center justify-center gap-2">
+                            <i class="w-5 h-5" data-lucide="upload"></i>
+                            <span>Unggah</span>
+                        </button>
+                    </div>
+                </form>
             </div>
-        </div>
-        <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-red-400 transition-colors">
-            <input type="file" name="FotoKondisiKendaraan" accept="image/*" class="hidden" id="foto-upload">
-            <label for="foto-upload" class="cursor-pointer">
-                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i class="w-6 h-6 text-gray-400" data-lucide="camera"></i>
-                </div>
-                <p class="text-sm text-gray-600">Tap untuk unggah foto</p>
-                <p class="text-xs text-gray-400 mt-1">JPG, PNG maksimal 5MB</p>
-            </label>
-        </div>
-
-        <div class="mt-6 mb-2">
-            <div class="flex items-center gap-2">
-                <i class="w-4 h-4 text-orange-500" data-lucide="map-pin"></i>
-                <span class="text-sm text-gray-700">Lokasi Anda:</span>
-            </div>
-            <p id="userLocationSubmit" class="font-semibold text-xs tracking-wide cursor-pointer underline text-orange-600 hover:text-orange-800 transition mt-1">
-                Mendeteksi lokasi...
-            </p>
-            <p class="text-xs text-gray-400 mt-1">Klik lokasi di atas untuk update posisi Anda</p>
-        </div>
-
-        <div>
-            <form asp-action="UploadFotoMuatan" method="post" enctype="multipart/form-data" class="mt-6">
-                <input type="hidden" name="Latitude" id="input-latitude" />
-                <input type="hidden" name="Longitude" id="input-longitude" />
-                <input type="hidden" name="AlamatJalan" id="input-alamat-jalan" />
-                <div class="flex gap-3 pt-4">
-                    <button type="submit"
-                            class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-3 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg">
-                        Unggah
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 
     <partial name="~/Views/Admin/Transport/SpjDriver/Shared/Components/_Navigation.cshtml" />
 </div>
 
+
+<register-block dynamic-section="styles" key="cssSubmit">
+<style>
+    .upload-area {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .upload-area:hover {
+        background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .upload-area.dragover {
+        background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+        border-color: #f97316 !important;
+        transform: scale(1.02);
+        box-shadow: 0 25px 50px -12px rgba(251, 146, 60, 0.25);
+    }
+    
+    .preview-container {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .preview-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        opacity: 0;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        z-index: 10;
+    }
+    
+    .preview-container:hover .preview-overlay {
+        opacity: 1;
+    }
+    
+    .overlay-btn {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: none;
+        color: white;
+        padding: 12px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .overlay-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+    
+    .overlay-btn.delete:hover {
+        background: rgba(239, 68, 68, 0.8);
+    }
+    
+    .upload-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #f97316, #fb923c);
+        transition: width 0.3s ease;
+        border-radius: 0 0 12px 12px;
+        width: 0%;
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .5; }
+    }
+    
+    .success-animation {
+        animation: successPulse 0.6s ease;
+    }
+    
+    @@keyframes successPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .file-info {
+        position: absolute;
+        bottom: 8px;
+        left: 8px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .preview-container:hover .file-info {
+        opacity: 1;
+    }
+    
+    .location-badge {
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .floating-button {
+        box-shadow: 0 10px 25px -5px rgba(251, 146, 60, 0.4);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .floating-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 40px -5px rgba(251, 146, 60, 0.6);
+    }
+    
+    .upload-icon-container {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover .upload-icon-container {
+        transform: scale(1.1);
+        background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
+    }
+    
+    .upload-area:hover .upload-icon-container i {
+        color: white !important;
+    }
+</style>
+</register-block>
 
 <register-block dynamic-section="scripts" key="jsSubmit">
 <script>
@@ -75,13 +272,137 @@ document.addEventListener("DOMContentLoaded", function () {
     const inputLat = document.getElementById("input-latitude");
     const inputLng = document.getElementById("input-longitude");
     const inputAlamat = document.getElementById("input-alamat-jalan");
+    const refreshLocationBtn = document.getElementById("refresh-location");
+
+    const uploadArea = document.getElementById("upload-area");
+    const fotoInput = document.getElementById("foto-upload");
+    const previewImage = document.getElementById("preview-image");
+    const previewIcon = document.getElementById("preview-icon");
+    const closePreview = document.getElementById("close-preview");
+    const editPreview = document.getElementById("edit-preview");
+    const previewOverlay = document.getElementById("preview-overlay");
+    const defaultState = document.getElementById("default-state");
+    const uploadText = document.getElementById("upload-text");
+    const fileInfo = document.getElementById("file-info");
+    const fileName = document.getElementById("file-name");
+    const fileSize = document.getElementById("file-size");
+    const uploadProgress = document.getElementById("upload-progress");
+    const submitBtn = document.getElementById("submit-btn");
+
+    uploadArea.addEventListener("dragover", function(e) {
+        e.preventDefault();
+        uploadArea.classList.add("dragover");
+    });
+
+    uploadArea.addEventListener("dragleave", function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+    });
+
+    uploadArea.addEventListener("drop", function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileSelect(files[0]);
+        }
+    });
+
+    uploadArea.addEventListener("click", function(e) {
+        if (e.target.tagName !== 'LABEL' && !e.target.closest('label')) {
+            fotoInput.click();
+        }
+    });
+
+    fotoInput.addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            handleFileSelect(file);
+        }
+    });
+
+    function handleFileSelect(file) {
+        const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+        if (!allowedTypes.includes(file.type)) {
+            showAlert("File harus JPG, JPEG, atau PNG.", "error");
+            fotoInput.value = "";
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            showAlert("Ukuran maksimal 10MB.", "error");
+            fotoInput.value = "";
+            return;
+        }
+
+        showUploadProgress(file);
+
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            previewImage.src = ev.target.result;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        showPreview();
+                        uploadProgress.style.width = "0%";
+                    }, 500);
+                }
+                uploadProgress.style.width = progress + "%";
+            }, 100);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function showUploadProgress(file) {
+        defaultState.style.display = "none";
+        uploadText.style.display = "none";
+        uploadProgress.style.width = "0%";
+    }
+
+    function showPreview() {
+        previewImage.style.display = "block";
+        previewOverlay.style.display = "flex";
+        fileInfo.style.display = "block";
+        uploadArea.classList.add("success-animation");
+        showAlert("Foto berhasil dimuat!", "success");
+    }
+
+    function resetUpload() {
+        fotoInput.value = "";
+        previewImage.src = "#";
+        previewImage.style.display = "none";
+        previewOverlay.style.display = "none";
+        fileInfo.style.display = "none";
+        defaultState.style.display = "block";
+        uploadText.style.display = "block";
+        uploadArea.classList.remove("success-animation");
+        uploadProgress.style.width = "0%";
+    }
+
+    editPreview.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        fotoInput.click();
+    });
+
+    closePreview.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        resetUpload();
+    });
 
     function reverseGeocode(lat, lng) {
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
             .then(res => res.json())
             .then(data => {
                 const address = data.display_name || `${lat}, ${lng}`;
-                userLocationEl.textContent = address;
+                userLocationEl.innerHTML = `<span>${address}</span>`;
                 localStorage.setItem("user_latitude", lat);
                 localStorage.setItem("user_longitude", lng);
                 localStorage.setItem("user_address", address);
@@ -90,7 +411,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (inputAlamat) inputAlamat.value = address;
             })
             .catch(() => {
-                userLocationEl.textContent = `${lat}, ${lng}`;
+                userLocationEl.innerHTML = `<span>${lat}, ${lng}</span>`;
                 if (inputLat) inputLat.value = lat;
                 if (inputLng) inputLng.value = lng;
                 if (inputAlamat) inputAlamat.value = `${lat}, ${lng}`;
@@ -99,7 +420,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function getLocationUpdate() {
         if ("geolocation" in navigator) {
-            userLocationEl.textContent = "Mendeteksi lokasi baru...";
+            userLocationEl.innerHTML = `<span>Mendeteksi lokasi...</span>`;
             navigator.geolocation.getCurrentPosition(
                 function (position) {
                     const lat = position.coords.latitude.toFixed(6);
@@ -107,14 +428,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     reverseGeocode(lat, lng);
                 },
                 function () {
-                    userLocationEl.textContent = "Lokasi tidak diizinkan";
+                    userLocationEl.innerHTML = `<span>Lokasi tidak diizinkan</span>`;
                     if (inputLat) inputLat.value = "";
                     if (inputLng) inputLng.value = "";
                     if (inputAlamat) inputAlamat.value = "Lokasi tidak diizinkan";
                 }
             );
         } else {
-            userLocationEl.textContent = "Browser tidak mendukung lokasi";
+            userLocationEl.innerHTML = `<span>Browser tidak mendukung lokasi</span>`;
             if (inputLat) inputLat.value = "";
             if (inputLng) inputLng.value = "";
             if (inputAlamat) inputAlamat.value = "Browser tidak mendukung lokasi";
@@ -126,6 +447,60 @@ document.addEventListener("DOMContentLoaded", function () {
     userLocationEl.addEventListener("click", function () {
         getLocationUpdate();
     });
+
+    refreshLocationBtn.addEventListener("click", function() {
+        getLocationUpdate();
+    });
+
+    document.getElementById("upload-form").addEventListener("submit", function(e) {
+        const originalContent = submitBtn.innerHTML;
+        submitBtn.innerHTML = `
+            <svg class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Mengunggah...</span>
+        `;
+        submitBtn.disabled = true;
+
+        setTimeout(() => {
+            submitBtn.innerHTML = originalContent;
+            submitBtn.disabled = false;
+            showAlert("Form berhasil dikirim!", "success");
+        }, 2000);
+    });
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg text-white font-medium transition-all duration-300 ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        }`;
+        alertDiv.textContent = message;
+        alertDiv.style.transform = 'translateX(100%)';
+        
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.style.transform = 'translateX(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            alertDiv.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (document.body.contains(alertDiv)) {
+                    document.body.removeChild(alertDiv);
+                }
+            }, 300);
+        }, 3000);
+    }
 });
 </script>
 </register-block>
