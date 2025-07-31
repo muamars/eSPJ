@@ -5,7 +5,6 @@
 
 
 <div class="max-w-sm mx-auto bg-white min-h-screen">
-    <!-- Header with Orange Background -->
     <div class="bg-orange-500 text-white px-3 py-4 rounded-b-2xl relative pb-12">
         <div class="flex items-center justify-between">
             <a href="@Url.Action("Index", "Home")" class="p-1 hover:bg-white/10 rounded-full transition-colors">
@@ -17,7 +16,6 @@
     </div>
 
 
-    <!-- Upload -->
     <div class="px-4 py-6">
         <div class="bg-white rounded-2xl p-5 border border-gray-100">
         <div class="flex items-center gap-3 mb-4">
@@ -40,7 +38,6 @@
             </label>
         </div>
 
-        <!-- Lokasi User -->
         <div class="mt-6 mb-2">
             <div class="flex items-center gap-2">
                 <i class="w-4 h-4 text-orange-500" data-lucide="map-pin"></i>
@@ -53,29 +50,31 @@
         </div>
 
         <div>
-            <form asp-action="UploadFotoMuatan" method="post" class="mt-6">
-
-                    <div class="flex gap-3 pt-4">
-                        <button type="submit"
-                                class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-3 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg">
-                            Unggah
-                        </button>
-                    </div>
+            <form asp-action="UploadFotoMuatan" method="post" enctype="multipart/form-data" class="mt-6">
+                <input type="hidden" name="Latitude" id="input-latitude" />
+                <input type="hidden" name="Longitude" id="input-longitude" />
+                <input type="hidden" name="AlamatJalan" id="input-alamat-jalan" />
+                <div class="flex gap-3 pt-4">
+                    <button type="submit"
+                            class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold py-3 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-lg">
+                        Unggah
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
-        <!-- Bottom Navigation -->
-        <partial name="~/Views/Admin/Transport/SpjDriver/Shared/Components/_Navigation.cshtml" />
+    <partial name="~/Views/Admin/Transport/SpjDriver/Shared/Components/_Navigation.cshtml" />
 </div>
 
 
 <register-block dynamic-section="scripts" key="jsSubmit">
 <script>
-</script>
-<script>
 document.addEventListener("DOMContentLoaded", function () {
     const userLocationEl = document.getElementById("userLocationSubmit");
+    const inputLat = document.getElementById("input-latitude");
+    const inputLng = document.getElementById("input-longitude");
+    const inputAlamat = document.getElementById("input-alamat-jalan");
 
     function reverseGeocode(lat, lng) {
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
@@ -86,9 +85,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 localStorage.setItem("user_latitude", lat);
                 localStorage.setItem("user_longitude", lng);
                 localStorage.setItem("user_address", address);
+                if (inputLat) inputLat.value = lat;
+                if (inputLng) inputLng.value = lng;
+                if (inputAlamat) inputAlamat.value = address;
             })
             .catch(() => {
                 userLocationEl.textContent = `${lat}, ${lng}`;
+                if (inputLat) inputLat.value = lat;
+                if (inputLng) inputLng.value = lng;
+                if (inputAlamat) inputAlamat.value = `${lat}, ${lng}`;
             });
     }
 
@@ -103,21 +108,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 function () {
                     userLocationEl.textContent = "Lokasi tidak diizinkan";
+                    if (inputLat) inputLat.value = "";
+                    if (inputLng) inputLng.value = "";
+                    if (inputAlamat) inputAlamat.value = "Lokasi tidak diizinkan";
                 }
             );
         } else {
             userLocationEl.textContent = "Browser tidak mendukung lokasi";
+            if (inputLat) inputLat.value = "";
+            if (inputLng) inputLng.value = "";
+            if (inputAlamat) inputAlamat.value = "Browser tidak mendukung lokasi";
         }
     }
 
-    const savedAddress = localStorage.getItem("user_address");
-    if (savedAddress) {
-        userLocationEl.textContent = savedAddress;
-    } else {
-        getLocationUpdate();
-    }
+    getLocationUpdate();
 
-    // Update Lokasi
     userLocationEl.addEventListener("click", function () {
         getLocationUpdate();
     });

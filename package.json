@@ -4,6 +4,6 @@
     "tailwindcss": "^4.1.11"
   },
   "scripts": {
-    "watch": "npx @tailwindcss/cli -i ./wwwroot/css/site.css -o ./wwwroot/css/watch.css --watch"
+    "watch": "npx @tailwindcss/cli -i ./wwwroot/driver/css/site.css -o ./wwwroot/driver/css/watch.css --watch"
   }
 }
