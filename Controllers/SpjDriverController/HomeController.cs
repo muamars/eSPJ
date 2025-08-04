@@ -4,26 +4,26 @@ using eSPJ.Models;
 
 namespace eSPJ.Controllers.SpjDriverController;
 
+ [Route("")]
 public class HomeController : Controller
 {
-    
     private readonly ILogger<HomeController> _logger;
 
     public HomeController(ILogger<HomeController> logger)
     {
         _logger = logger;
     }
-
+    [HttpGet("")]
     public IActionResult Index()
     {
-         return View("~/Views/Admin/Transport/SpjDriver/Home/Index.cshtml");
+        return View("~/Views/Admin/Transport/SpjDriver/Home/Index.cshtml");
     }
-
-    public IActionResult Privacy()
+    [HttpGet("kosong")]
+    public IActionResult Kosong()
     {
-        return View("~/Views/Admin/Transport/SpjDriver/Home/Privacy.cshtml");
+        return View("~/Views/Admin/Transport/SpjDriver/Home/Kosong.cshtml");
     }
-
+ 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

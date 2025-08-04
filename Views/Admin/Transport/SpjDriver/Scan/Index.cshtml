@@ -5,30 +5,6 @@
 
 @section Styles {
     <link rel="stylesheet" href="@Url.Content("~/driver/css/scanner.css")" asp-append-version="true" />
-    <style>
-        /* Html5-QRCode specific styles */
-        #scanner-container video {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            border-radius: 8px;
-        }
-        
-        #scanner-container canvas {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            border-radius: 8px;
-        }
-        
-        /* Hide Html5-QRCode default UI elements */
-        #scanner-container select,
-        #scanner-container button {
-            display: none !important;
-        }
-    </style>
 }
 
 
@@ -43,9 +19,7 @@
         </div>
     </div>
 
-    <!-- Scanner Section -->
     <div class="p-4">
-        <!-- Alert Messages -->
         @if (TempData["Success"] != null)
         {
             <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -66,12 +40,9 @@
             </div>
         }
 
-        <!-- Camera Preview -->
         <div class="scanner-container mb-4" style="height: 300px;">
             <div id="scanner-container" class="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
-                <!-- Html5-QRCode will create video element here -->
                 
-                <!-- Loading State -->
                 <div id="loading-scanner" class="absolute inset-0 bg-gray-900 flex items-center justify-center z-10">
                     <div class="text-center text-white">
                         <div class="loading-spinner mx-auto mb-2"></div>
@@ -81,7 +52,6 @@
             </div>
         </div>
 
-        <!-- Scanner Controls -->
         <div class="space-y-3 mb-4">
             <button id="start-scanner" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-scanner">
                 <i class="w-5 h-5 inline mr-2" data-lucide="camera"></i>
@@ -93,7 +63,6 @@
                 Hentikan Scan
             </button>
 
-            <!-- Camera Permission Info -->
             <div id="permission-info" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <div class="flex items-start">
                     <i class="w-5 h-5 text-blue-600 mr-2 mt-0.5" data-lucide="info"></i>
@@ -109,7 +78,6 @@
                 </div>
             </div>
 
-            <!-- Permission Denied Info -->
             <div id="permission-denied" class="hidden bg-red-50 border border-red-200 rounded-lg p-3">
                 <div class="flex items-start">
                     <i class="w-5 h-5 text-red-600 mr-2 mt-0.5" data-lucide="alert-triangle"></i>
@@ -125,7 +93,6 @@
                 </div>
             </div>
 
-            <!-- Scanning Tips -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
                 <div class="flex items-start">
                     <i class="w-4 h-4 text-gray-600 mr-2 mt-0.5" data-lucide="lightbulb"></i>
@@ -143,7 +110,6 @@
             </div>
         </div>
 
-        <!-- Manual Input Alternative -->
         <div class="border-t pt-4">
             <h3 class="text-gray-700 font-medium mb-3">Atau input manual:</h3>
             <form id="manual-form" method="post" action="@Url.Action("ProcessScan", "Scan")">
@@ -160,7 +126,6 @@
             </form>
         </div>
 
-        <!-- Scan Result -->
         <div id="scan-result" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg scan-result-card">
             <div class="flex items-center mb-2">
                 <i class="w-5 h-5 text-green-600 mr-2" data-lucide="check-circle"></i>
@@ -177,7 +142,6 @@
             </div>
         </div>
 
-        <!-- Error Message -->
         <div id="error-message" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div class="flex items-center">
                 <i class="w-5 h-5 text-red-600 mr-2" data-lucide="alert-circle"></i>
@@ -185,16 +149,13 @@
             </div>
         </div>
     </div>
-
+    <partial name="~/Views/Admin/Transport/SpjDriver/Shared/Components/_NavigationAdmin.cshtml" />
 </div>
 
 <register-block dynamic-section="scripts" key="jsScan">
-    <!-- Html5-QRCode Library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript"></script>
     
-    <!-- Fallback script loader -->
     <script>
-        // Check if library loaded, if not try alternative CDN
         if (typeof Html5Qrcode === 'undefined') {
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
@@ -238,7 +199,6 @@
             }
 
             checkBrowserSupport() {
-                // Check if browser supports getUserMedia
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     this.startBtn.disabled = true;
                     this.startBtn.innerHTML = '<i class="w-5 h-5 inline mr-2" data-lucide="x-circle"></i>Browser Tidak Didukung';
@@ -248,7 +208,6 @@
                     return;
                 }
 
-                // Check if Html5Qrcode is loaded
                 if (typeof Html5Qrcode === 'undefined') {
                     this.startBtn.disabled = true;
                     this.startBtn.innerHTML = '<i class="w-5 h-5 inline mr-2" data-lucide="x-circle"></i>Library Tidak Dimuat';
@@ -258,7 +217,6 @@
                     return;
                 }
 
-                // Check if page is served over HTTPS (required for camera access in production)
                 if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
                     this.showError('Scanner barcode memerlukan koneksi HTTPS yang aman. Hubungi administrator sistem.');
                 }
@@ -271,7 +229,6 @@
                     this.hideResult();
                     this.hidePermissionMessages();
 
-                    // Initialize Html5-QRCode scanner
                     await this.initializeHtml5QrCode();
                     
                     this.isScanning = true;
@@ -287,23 +244,17 @@
 
             async initializeHtml5QrCode() {
                 try {
-                    // Show permission info
                     this.permissionInfo.classList.remove('hidden');
                     
-                    // Wait a moment to show the message
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     
-                    // Initialize Html5-QRCode
                     this.html5QrCode = new Html5Qrcode("scanner-container");
                     
-                    // Get available cameras - This will trigger permission request
                     const cameras = await Html5Qrcode.getCameras();
                     
                     if (cameras && cameras.length > 0) {
-                        // Try to use back camera first, fallback to first available
                         let cameraId = cameras[0].id;
                         
-                        // Look for back camera
                         const backCamera = cameras.find(camera => 
                             camera.label.toLowerCase().includes('back') || 
                             camera.label.toLowerCase().includes('rear') ||
@@ -314,14 +265,12 @@
                             cameraId = backCamera.id;
                         }
                         
-                        // Start scanning with square QR code focus
                         await this.html5QrCode.start(
                             cameraId,
                             {
-                                fps: 10, // Frame per second
+                                fps: 10,
                                 qrbox: function(viewfinderWidth, viewfinderHeight) {
-                                    // Make it square - use the smaller dimension
-                                    let minEdgePercentage = 0.7; // 70% of the smaller edge
+                                    let minEdgePercentage = 0.7;
                                     let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
                                     let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
                                     return {
@@ -329,15 +278,13 @@
                                         height: qrboxSize
                                     };
                                 },
-                                aspectRatio: 1.0, // Square ratio for QR codes
+                                aspectRatio: 1.0, 
                                 rememberLastUsedCamera: true
                             },
                             (decodedText, decodedResult) => {
-                                // Success callback
                                 this.handleBarcodeDetected(decodedText, decodedResult);
                             },
                             (errorMessage) => {
-                                // Error callback (optional, can be ignored for scanning errors)
                             }
                         );
                         
@@ -377,19 +324,14 @@
             }
 
             handleBarcodeDetected(decodedText, decodedResult) {
-                // Validate the code (basic validation)
                 if (decodedText && decodedText.length >= 5) {
-                    // Add visual feedback
                     this.flashSuccess();
                     
                     this.detectedCode = decodedText;
                     this.showResult(decodedText);
-                    this.stopScanner(); // Auto stop after detection
-                    
-                    // Play a success sound
+                    this.stopScanner(); 
                     this.playSuccessSound();
                     
-                    // Haptic feedback if supported
                     this.vibrate();
                 }
             }
@@ -399,7 +341,6 @@
                     try {
                         await this.html5QrCode.stop();
                     } catch (error) {
-                        // Error stopping scanner
                     }
                     this.isScanning = false;
                 }
@@ -409,7 +350,6 @@
             }
 
             flashSuccess() {
-                // Add a green flash overlay to indicate successful scan
                 const flash = document.createElement('div');
                 flash.className = 'absolute inset-0 bg-green-500 opacity-50 rounded-lg';
                 flash.style.zIndex = '20';
@@ -421,15 +361,13 @@
             }
 
             vibrate() {
-                // Provide haptic feedback on mobile devices
                 if ('vibrate' in navigator) {
-                    navigator.vibrate([200]); // Vibrate for 200ms
+                    navigator.vibrate([200]); 
                 }
             }
 
             confirmScan() {
                 if (this.detectedCode) {
-                    // Auto-fill manual input and submit
                     this.manualInput.value = this.detectedCode;
                     this.manualForm.submit();
                 }
@@ -441,12 +379,10 @@
                 this.hidePermissionMessages();
                 this.detectedCode = null;
                 
-                // Stop current scanner if running
                 if (this.isScanning && this.html5QrCode) {
                     await this.stopScanner();
                 }
                 
-                // Wait a bit before restarting
                 setTimeout(() => {
                     this.startScanner();
                 }, 500);
@@ -499,7 +435,6 @@
             }
 
             playSuccessSound() {
-                // Create a simple beep sound
                 try {
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = audioContext.createOscillator();
@@ -517,14 +452,11 @@
                     oscillator.start(audioContext.currentTime);
                     oscillator.stop(audioContext.currentTime + 0.2);
                 } catch (e) {
-                    // Ignore audio errors
                 }
             }
         }
 
-        // Initialize scanner when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            // Function to check if Html5Qrcode is loaded
             function waitForLibrary() {
                 if (typeof Html5Qrcode !== 'undefined') {
                     new BarcodeScanner();
@@ -533,7 +465,6 @@
                 }
             }
             
-            // Start checking
             waitForLibrary();
         });
     </script>
