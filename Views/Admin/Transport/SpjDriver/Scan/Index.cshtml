@@ -9,14 +9,8 @@
         /* Html5-QRCode specific styles */
         #scanner-container video {
             width: 100% !important;
-            height: 100% !impo                if (this.html5QrCode && this.isScanning) {
-                    try {
-                        await this.html5QrCode.stop();
-                    } catch (error) {
-                        // Error stopping scanner
-                    }
-                    this.isScanning = false;
-                }           object-fit: cover !important;
+            height: 100% !important;
+            object-fit: cover !important;
             border-radius: 8px;
         }
         
@@ -33,21 +27,6 @@
         #scanner-container select,
         #scanner-container button {
             display: none !important;
-        }
-        
-        /* Custom scanner box overlay */
-        #scanner-container::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 250px;
-            height: 150px;
-            border: 2px dashed rgba(255, 255, 255, 0.7);
-            border-radius: 8px;
-            pointer-events: none;
-            z-index: 5;
         }
     </style>
 }
@@ -153,10 +132,10 @@
                     <div class="text-gray-700">
                         <p class="font-medium mb-1">Tips Scanning:</p>
                         <ul class="text-xs space-y-1">
-                            <li>• Pastikan barcode dalam pencahayaan yang cukup</li>
+                            <li>• Pastikan QR code dalam pencahayaan yang cukup</li>
                             <li>• Jaga jarak 15-30cm dari kamera</li>
-                            <li>• Arahkan kamera secara tegak lurus ke barcode</li>
-                            <li>• Pastikan barcode tidak buram atau rusak</li>
+                            <li>• Arahkan kamera secara tegak lurus ke QR code</li>
+                            <li>• Pastikan QR code tidak buram atau rusak</li>
                             <li>• <strong>Klik "Izinkan/Allow" saat browser meminta akses kamera</strong></li>
                         </ul>
                     </div>
@@ -185,7 +164,7 @@
         <div id="scan-result" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg scan-result-card">
             <div class="flex items-center mb-2">
                 <i class="w-5 h-5 text-green-600 mr-2" data-lucide="check-circle"></i>
-                <span class="text-green-800 font-medium">Barcode terdeteksi!</span>
+                <span class="text-green-800 font-medium">QR Code terdeteksi!</span>
             </div>
             <p class="text-green-700 mb-3">Kode: <span id="detected-code" class="font-mono font-bold"></span></p>
             <div class="flex gap-2">
@@ -335,13 +314,22 @@
                             cameraId = backCamera.id;
                         }
                         
-                        // Start scanning
+                        // Start scanning with square QR code focus
                         await this.html5QrCode.start(
                             cameraId,
                             {
                                 fps: 10, // Frame per second
-                                qrbox: { width: 250, height: 150 }, // Scanning area
-                                aspectRatio: 1.7, // Width/height ratio
+                                qrbox: function(viewfinderWidth, viewfinderHeight) {
+                                    // Make it square - use the smaller dimension
+                                    let minEdgePercentage = 0.7; // 70% of the smaller edge
+                                    let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                                    let qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+                                    return {
+                                        width: qrboxSize,
+                                        height: qrboxSize
+                                    };
+                                },
+                                aspectRatio: 1.0, // Square ratio for QR codes
                                 rememberLastUsedCamera: true
                             },
                             (decodedText, decodedResult) => {
