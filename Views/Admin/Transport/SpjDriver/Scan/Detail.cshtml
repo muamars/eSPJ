@@ -1,0 +1,118 @@
+@{
+    Layout = "~/Views/Admin/Transport/SpjDriver/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Detail SPJ";
+}
+
+<div class="max-w-sm mx-auto bg-white min-h-screen flex flex-col">
+    <div class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-4 relative flex-shrink-0">
+        <div class="flex items-center justify-between mb-2">
+            <a href="@Url.Action("Index", "Home")" class="p-2 hover:bg-white/20 rounded-xl transition-all duration-300 transform hover:scale-105">
+                <i class="w-5 h-5" data-lucide="chevron-left"></i>
+            </a>
+            <h1 class="text-xl font-bold tracking-wide">Detail SPJ</h1>
+            <div class="w-9"></div>
+        </div>
+        
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+    </div>
+
+    <div class="flex-1 flex flex-col px-4 pb-4">
+        <div class="-mt-4 relative z-10 mb-3">
+            <div class="bg-white rounded-xl border border-slate-200/50 p-3 backdrop-blur-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center ring-2 ring-white flex-shrink-0">
+                        <img src="@Url.Content("~/driver/profile.jpg")" alt="Foto Driver" class="object-cover w-full h-full rounded-xl" onerror="this.style.display='none';this.parentNode.innerHTML='<i class=\'w-7 h-7 text-slate-400\' data-lucide=\'user\'></i>';"/>
+                    </div>
+                    
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-base font-bold text-slate-800 truncate">Bonny Agung Putra</h2>
+                        <p class="text-xs text-orange-600 font-semibold mb-2">Driver</p>
+                        
+                        <div class="flex gap-1">
+                            <div class="bg-slate-100 rounded px-2 py-1 flex-1 min-w-0 items-center flex">
+                                <span class="text-xs text-slate-700 font-medium block truncate">B 1234 XYZ</span>
+                            </div>
+                            <div class="bg-slate-100 rounded px-2 py-1">
+                                <span class="text-xs text-slate-700 font-medium">JRC 005</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mb-4">
+            <div class="bg-white rounded-2xl  border border-slate-200/50 p-4">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center">
+                        <i class="w-4 h-4 text-white" data-lucide="file-text"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800">Informasi SPJ</h3>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 border border-orange-200">
+                        <div class="flex items-center gap-2 mb-1">
+                            <i class="w-3 h-3 text-orange-600" data-lucide="hash"></i>
+                            <span class="text-xs text-orange-700 font-medium">Nomor SPJ</span>
+                        </div>
+                        <div class="font-bold text-sm text-slate-800">SPJ/07-2025/PKM/000476</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-3 border border-amber-200">
+                        <div class="flex items-center gap-2 mb-1">
+                            <i class="w-3 h-3 text-amber-600" data-lucide="map-pin"></i>
+                            <span class="text-xs text-amber-700 font-medium">Tujuan</span>
+                        </div>
+                        <div class="font-bold text-sm text-slate-800">Taman Barito</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1">
+            <div class="bg-white rounded-2xl  border border-slate-200/50 p-4 h-full">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center">
+                        <i class="w-4 h-4 text-white" data-lucide="truck"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800">Status Penjemputan</h3>
+                </div>
+                
+                <div class="space-y-2">
+                    <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border-l-4 border-amber-400 rounded-r-lg p-3 shadow-sm">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                            <span class="text-xs font-semibold text-amber-700">PENGANGKUTAN</span>
+                        </div>
+                        <p class="text-xs text-slate-700 leading-relaxed">
+                            CV Tri Mitra Utama - Shell Radio Dalam
+                        </p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-emerald-50 to-green-50 border-l-4 border-emerald-400 rounded-r-lg p-3 shadow-sm">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                            <span class="text-xs font-semibold text-emerald-700">SUDAH TIBA DI LOKASI</span>
+                        </div>
+                        <p class="text-xs text-slate-700 leading-relaxed">
+                            CV Tri Berkah Sejahtera
+                        </p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-400 rounded-r-lg p-3 shadow-sm">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+                            <span class="text-xs font-semibold text-red-700">DIBATALKAN</span>
+                        </div>
+                        <p class="text-xs text-slate-700 leading-relaxed">
+                            CV Tri Berkah Sejahtera
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <partial name="~/Views/Admin/Transport/SpjDriver/Shared/Components/_Navigation.cshtml" />
+</div>

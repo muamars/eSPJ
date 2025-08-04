@@ -1,0 +1,552 @@
+@{
+    Layout = "~/Views/Admin/Transport/SpjDriver/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Scan SPJ";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="@Url.Content("~/driver/css/scanner.css")" asp-append-version="true" />
+    <style>
+        /* Html5-QRCode specific styles */
+        #scanner-container video {
+            width: 100% !important;
+            height: 100% !impo                if (this.html5QrCode && this.isScanning) {
+                    try {
+                        await this.html5QrCode.stop();
+                    } catch (error) {
+                        // Error stopping scanner
+                    }
+                    this.isScanning = false;
+                }           object-fit: cover !important;
+            border-radius: 8px;
+        }
+        
+        #scanner-container canvas {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 8px;
+        }
+        
+        /* Hide Html5-QRCode default UI elements */
+        #scanner-container select,
+        #scanner-container button {
+            display: none !important;
+        }
+        
+        /* Custom scanner box overlay */
+        #scanner-container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 150px;
+            border: 2px dashed rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+}
+
+
+<div class="max-w-sm mx-auto bg-white min-h-screen">
+    <div class="bg-orange-500 text-white px-3 py-4 rounded-b-2xl relative pb-12">
+        <div class="flex items-center justify-between">
+            <a href="@Url.Action("Index", "Home")" class="p-1 hover:bg-white/10 rounded-full transition-colors">
+                <i class="w-5 h-5" data-lucide="chevron-left"></i>
+            </a>
+            <h1 class="text-lg font-bold">Scan SPJ</h1>
+            <div class="w-8"></div>
+        </div>
+    </div>
+
+    <!-- Scanner Section -->
+    <div class="p-4">
+        <!-- Alert Messages -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center">
+                    <i class="w-5 h-5 text-green-600 mr-2" data-lucide="check-circle"></i>
+                    <span class="text-green-800">@TempData["Success"]</span>
+                </div>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex items-center">
+                    <i class="w-5 h-5 text-red-600 mr-2" data-lucide="alert-circle"></i>
+                    <span class="text-red-800">@TempData["Error"]</span>
+                </div>
+            </div>
+        }
+
+        <!-- Camera Preview -->
+        <div class="scanner-container mb-4" style="height: 300px;">
+            <div id="scanner-container" class="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
+                <!-- Html5-QRCode will create video element here -->
+                
+                <!-- Loading State -->
+                <div id="loading-scanner" class="absolute inset-0 bg-gray-900 flex items-center justify-center z-10">
+                    <div class="text-center text-white">
+                        <div class="loading-spinner mx-auto mb-2"></div>
+                        <p class="text-sm">Memuat scanner...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scanner Controls -->
+        <div class="space-y-3 mb-4">
+            <button id="start-scanner" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-scanner">
+                <i class="w-5 h-5 inline mr-2" data-lucide="camera"></i>
+                Mulai Scan
+            </button>
+            
+            <button id="stop-scanner" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-scanner hidden">
+                <i class="w-5 h-5 inline mr-2" data-lucide="camera-off"></i>
+                Hentikan Scan
+            </button>
+
+            <!-- Camera Permission Info -->
+            <div id="permission-info" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div class="flex items-start">
+                    <i class="w-5 h-5 text-blue-600 mr-2 mt-0.5" data-lucide="info"></i>
+                    <div class="text-blue-800 text-sm">
+                        <p class="font-medium mb-1">🎥 Meminta Akses Kamera...</p>
+                        <p class="mb-2">Browser akan meminta izin akses kamera. Pastikan untuk:</p>
+                        <ul class="text-xs space-y-1 list-disc list-inside">
+                            <li>Klik tombol <strong>"Allow"</strong> atau <strong>"Izinkan"</strong></li>
+                            <li>Jika popup tidak muncul, cek address bar browser</li>
+                            <li>Pastikan kamera tidak sedang digunakan aplikasi lain</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Permission Denied Info -->
+            <div id="permission-denied" class="hidden bg-red-50 border border-red-200 rounded-lg p-3">
+                <div class="flex items-start">
+                    <i class="w-5 h-5 text-red-600 mr-2 mt-0.5" data-lucide="alert-triangle"></i>
+                    <div class="text-red-800 text-sm">
+                        <p class="font-medium mb-1">Akses Kamera Ditolak</p>
+                        <p class="mb-2">Untuk menggunakan scanner, aktifkan akses kamera:</p>
+                        <ol class="list-decimal list-inside space-y-1 text-xs">
+                            <li>Klik ikon kunci/kamera di address bar browser</li>
+                            <li>Pilih "Allow" atau "Izinkan" untuk kamera</li>
+                            <li>Refresh halaman dan coba lagi</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scanning Tips -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
+                <div class="flex items-start">
+                    <i class="w-4 h-4 text-gray-600 mr-2 mt-0.5" data-lucide="lightbulb"></i>
+                    <div class="text-gray-700">
+                        <p class="font-medium mb-1">Tips Scanning:</p>
+                        <ul class="text-xs space-y-1">
+                            <li>• Pastikan barcode dalam pencahayaan yang cukup</li>
+                            <li>• Jaga jarak 15-30cm dari kamera</li>
+                            <li>• Arahkan kamera secara tegak lurus ke barcode</li>
+                            <li>• Pastikan barcode tidak buram atau rusak</li>
+                            <li>• <strong>Klik "Izinkan/Allow" saat browser meminta akses kamera</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Input Alternative -->
+        <div class="border-t pt-4">
+            <h3 class="text-gray-700 font-medium mb-3">Atau input manual:</h3>
+            <form id="manual-form" method="post" action="@Url.Action("ProcessScan", "Scan")">
+                <div class="flex gap-2">
+                    <input type="text" 
+                           id="manual-barcode" 
+                           name="barcode" 
+                           placeholder="Masukkan kode SPJ manual" 
+                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="w-5 h-5" data-lucide="search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Scan Result -->
+        <div id="scan-result" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg scan-result-card">
+            <div class="flex items-center mb-2">
+                <i class="w-5 h-5 text-green-600 mr-2" data-lucide="check-circle"></i>
+                <span class="text-green-800 font-medium">Barcode terdeteksi!</span>
+            </div>
+            <p class="text-green-700 mb-3">Kode: <span id="detected-code" class="font-mono font-bold"></span></p>
+            <div class="flex gap-2">
+                <button id="confirm-scan" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors btn-scanner">
+                    Konfirmasi
+                </button>
+                <button id="retry-scan" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors btn-scanner">
+                    Scan Ulang
+                </button>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div class="flex items-center">
+                <i class="w-5 h-5 text-red-600 mr-2" data-lucide="alert-circle"></i>
+                <span class="text-red-800" id="error-text"></span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<register-block dynamic-section="scripts" key="jsScan">
+    <!-- Html5-QRCode Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript"></script>
+    
+    <!-- Fallback script loader -->
+    <script>
+        // Check if library loaded, if not try alternative CDN
+        if (typeof Html5Qrcode === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            script.onerror = () => alert('Scanner library failed to load');
+            document.head.appendChild(script);
+        }
+    </script>
+    
+    <script>
+        class BarcodeScanner {
+            constructor() {
+                this.isScanning = false;
+                this.detectedCode = null;
+                this.html5QrCode = null;
+                this.initializeElements();
+                this.bindEvents();
+                this.checkBrowserSupport();
+            }
+
+            initializeElements() {
+                this.startBtn = document.getElementById('start-scanner');
+                this.stopBtn = document.getElementById('stop-scanner');
+                this.loadingDiv = document.getElementById('loading-scanner');
+                this.scanResult = document.getElementById('scan-result');
+                this.errorMessage = document.getElementById('error-message');
+                this.detectedCodeSpan = document.getElementById('detected-code');
+                this.confirmBtn = document.getElementById('confirm-scan');
+                this.retryBtn = document.getElementById('retry-scan');
+                this.manualForm = document.getElementById('manual-form');
+                this.manualInput = document.getElementById('manual-barcode');
+                this.permissionInfo = document.getElementById('permission-info');
+                this.permissionDenied = document.getElementById('permission-denied');
+            }
+
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.startScanner());
+                this.stopBtn.addEventListener('click', () => this.stopScanner());
+                this.confirmBtn.addEventListener('click', () => this.confirmScan());
+                this.retryBtn.addEventListener('click', () => this.retryScan());
+                this.manualForm.addEventListener('submit', (e) => this.handleManualSubmit(e));
+            }
+
+            checkBrowserSupport() {
+                // Check if browser supports getUserMedia
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    this.startBtn.disabled = true;
+                    this.startBtn.innerHTML = '<i class="w-5 h-5 inline mr-2" data-lucide="x-circle"></i>Browser Tidak Didukung';
+                    this.startBtn.classList.remove('bg-orange-500', 'hover:bg-orange-600');
+                    this.startBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    this.showError('Browser Anda tidak mendukung akses kamera. Gunakan browser modern seperti Chrome, Firefox, atau Safari.');
+                    return;
+                }
+
+                // Check if Html5Qrcode is loaded
+                if (typeof Html5Qrcode === 'undefined') {
+                    this.startBtn.disabled = true;
+                    this.startBtn.innerHTML = '<i class="w-5 h-5 inline mr-2" data-lucide="x-circle"></i>Library Tidak Dimuat';
+                    this.startBtn.classList.remove('bg-orange-500', 'hover:bg-orange-600');
+                    this.startBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    this.showError('Library scanner tidak dapat dimuat. Periksa koneksi internet dan refresh halaman.');
+                    return;
+                }
+
+                // Check if page is served over HTTPS (required for camera access in production)
+                if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                    this.showError('Scanner barcode memerlukan koneksi HTTPS yang aman. Hubungi administrator sistem.');
+                }
+            }
+
+            async startScanner() {
+                try {
+                    this.showLoading();
+                    this.hideError();
+                    this.hideResult();
+                    this.hidePermissionMessages();
+
+                    // Initialize Html5-QRCode scanner
+                    await this.initializeHtml5QrCode();
+                    
+                    this.isScanning = true;
+                    this.startBtn.classList.add('hidden');
+                    this.stopBtn.classList.remove('hidden');
+                    this.hideLoading();
+                    
+                } catch (error) {
+                    this.handleScannerError(error);
+                    this.hideLoading();
+                }
+            }
+
+            async initializeHtml5QrCode() {
+                try {
+                    // Show permission info
+                    this.permissionInfo.classList.remove('hidden');
+                    
+                    // Wait a moment to show the message
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Initialize Html5-QRCode
+                    this.html5QrCode = new Html5Qrcode("scanner-container");
+                    
+                    // Get available cameras - This will trigger permission request
+                    const cameras = await Html5Qrcode.getCameras();
+                    
+                    if (cameras && cameras.length > 0) {
+                        // Try to use back camera first, fallback to first available
+                        let cameraId = cameras[0].id;
+                        
+                        // Look for back camera
+                        const backCamera = cameras.find(camera => 
+                            camera.label.toLowerCase().includes('back') || 
+                            camera.label.toLowerCase().includes('rear') ||
+                            camera.label.toLowerCase().includes('environment')
+                        );
+                        
+                        if (backCamera) {
+                            cameraId = backCamera.id;
+                        }
+                        
+                        // Start scanning
+                        await this.html5QrCode.start(
+                            cameraId,
+                            {
+                                fps: 10, // Frame per second
+                                qrbox: { width: 250, height: 150 }, // Scanning area
+                                aspectRatio: 1.7, // Width/height ratio
+                                rememberLastUsedCamera: true
+                            },
+                            (decodedText, decodedResult) => {
+                                // Success callback
+                                this.handleBarcodeDetected(decodedText, decodedResult);
+                            },
+                            (errorMessage) => {
+                                // Error callback (optional, can be ignored for scanning errors)
+                            }
+                        );
+                        
+                        this.hidePermissionMessages();
+                        
+                    } else {
+                        throw new Error('No cameras found on this device');
+                    }
+                    
+                } catch (error) {
+                    this.hidePermissionMessages();
+                    
+                    if (error.message.includes('Permission denied') || 
+                        error.message.includes('NotAllowedError') ||
+                        error.message.includes('permission') ||
+                        error.name === 'NotAllowedError') {
+                        this.permissionDenied.classList.remove('hidden');
+                        throw new Error('Camera permission denied');
+                    } else if (error.message.includes('No cameras found')) {
+                        throw new Error('No camera found on this device');
+                    } else {
+                        throw new Error('Unable to access camera: ' + error.message);
+                    }
+                }
+            }
+
+            handleScannerError(error) {
+                if (error.message.includes('permission denied') || error.message.includes('Camera permission denied')) {
+                    this.permissionDenied.classList.remove('hidden');
+                } else if (error.message.includes('No camera found')) {
+                    this.showError('Kamera tidak ditemukan pada perangkat ini.');
+                } else if (error.message.includes('NotReadableError')) {
+                    this.showError('Kamera sedang digunakan aplikasi lain. Tutup aplikasi lain dan coba lagi.');
+                } else {
+                    this.showError('Gagal memulai scanner. Pastikan kamera dapat diakses dan coba lagi.');
+                }
+            }
+
+            handleBarcodeDetected(decodedText, decodedResult) {
+                // Validate the code (basic validation)
+                if (decodedText && decodedText.length >= 5) {
+                    // Add visual feedback
+                    this.flashSuccess();
+                    
+                    this.detectedCode = decodedText;
+                    this.showResult(decodedText);
+                    this.stopScanner(); // Auto stop after detection
+                    
+                    // Play a success sound
+                    this.playSuccessSound();
+                    
+                    // Haptic feedback if supported
+                    this.vibrate();
+                }
+            }
+
+            async stopScanner() {
+                if (this.isScanning && this.html5QrCode) {
+                    try {
+                        await this.html5QrCode.stop();
+                    } catch (error) {
+                        // Error stopping scanner
+                    }
+                    this.isScanning = false;
+                }
+                
+                this.startBtn.classList.remove('hidden');
+                this.stopBtn.classList.add('hidden');
+            }
+
+            flashSuccess() {
+                // Add a green flash overlay to indicate successful scan
+                const flash = document.createElement('div');
+                flash.className = 'absolute inset-0 bg-green-500 opacity-50 rounded-lg';
+                flash.style.zIndex = '20';
+                document.getElementById('scanner-container').appendChild(flash);
+                
+                setTimeout(() => {
+                    flash.remove();
+                }, 200);
+            }
+
+            vibrate() {
+                // Provide haptic feedback on mobile devices
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([200]); // Vibrate for 200ms
+                }
+            }
+
+            confirmScan() {
+                if (this.detectedCode) {
+                    // Auto-fill manual input and submit
+                    this.manualInput.value = this.detectedCode;
+                    this.manualForm.submit();
+                }
+            }
+
+            async retryScan() {
+                this.hideResult();
+                this.hideError();
+                this.hidePermissionMessages();
+                this.detectedCode = null;
+                
+                // Stop current scanner if running
+                if (this.isScanning && this.html5QrCode) {
+                    await this.stopScanner();
+                }
+                
+                // Wait a bit before restarting
+                setTimeout(() => {
+                    this.startScanner();
+                }, 500);
+            }
+
+            handleManualSubmit(e) {
+                const code = this.manualInput.value.trim();
+                if (!code) {
+                    e.preventDefault();
+                    this.showError('Silakan masukkan kode SPJ.');
+                    return;
+                }
+                
+                if (code.length < 5) {
+                    e.preventDefault();
+                    this.showError('Kode SPJ minimal 5 karakter.');
+                    return;
+                }
+            }
+
+            showLoading() {
+                this.loadingDiv.classList.remove('hidden');
+            }
+
+            hideLoading() {
+                this.loadingDiv.classList.add('hidden');
+            }
+
+            showResult(code) {
+                this.detectedCodeSpan.textContent = code;
+                this.scanResult.classList.remove('hidden');
+            }
+
+            hideResult() {
+                this.scanResult.classList.add('hidden');
+            }
+
+            showError(message) {
+                document.getElementById('error-text').textContent = message;
+                this.errorMessage.classList.remove('hidden');
+            }
+
+            hideError() {
+                this.errorMessage.classList.add('hidden');
+            }
+
+            hidePermissionMessages() {
+                this.permissionInfo.classList.add('hidden');
+                this.permissionDenied.classList.add('hidden');
+            }
+
+            playSuccessSound() {
+                // Create a simple beep sound
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                } catch (e) {
+                    // Ignore audio errors
+                }
+            }
+        }
+
+        // Initialize scanner when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to check if Html5Qrcode is loaded
+            function waitForLibrary() {
+                if (typeof Html5Qrcode !== 'undefined') {
+                    new BarcodeScanner();
+                } else {
+                    setTimeout(waitForLibrary, 500);
+                }
+            }
+            
+            // Start checking
+            waitForLibrary();
+        });
+    </script>
+</register-block>

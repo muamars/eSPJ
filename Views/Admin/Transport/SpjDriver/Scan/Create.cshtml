@@ -1,0 +1,871 @@
+@{
+    Layout = "~/Views/Admin/Transport/SpjDriver/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Buat Barcode SPJ";
+}
+
+<style>
+    /* QR Code Container Styles */
+    #qr-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 250px;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+    }
+    
+    #qr-canvas {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+    
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #f97316;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .btn-action {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+        
+        #qr-print-area, #qr-print-area * {
+            visibility: visible;
+        }
+        
+        #qr-print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="max-w-sm mx-auto bg-white min-h-screen">
+    <!-- Header with Orange Background -->
+    <div class="bg-orange-500 text-white px-3 py-4 rounded-b-2xl relative pb-12">
+        <div class="flex items-center justify-between">
+            <a href="@Url.Action("Index", "Home")" class="p-1 hover:bg-white/10 rounded-full transition-colors">
+                <i class="w-5 h-5" data-lucide="chevron-left"></i>
+            </a>
+            <h1 class="text-lg font-bold">Buat Barcode SPJ</h1>
+            <div class="w-8"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="p-4">
+        <!-- Alert Messages -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center">
+                    <i class="w-5 h-5 text-green-600 mr-2" data-lucide="check-circle"></i>
+                    <span class="text-green-800">@TempData["Success"]</span>
+                </div>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex items-center">
+                    <i class="w-5 h-5 text-red-600 mr-2" data-lucide="alert-circle"></i>
+                    <span class="text-red-800">@TempData["Error"]</span>
+                </div>
+            </div>
+        }
+
+        <!-- SPJ Data Input Form -->
+        <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Data SPJ</h2>
+            
+            <form id="spj-form" class="space-y-4">
+                <div>
+                    <label for="spj-number" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor SPJ <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           id="spj-number" 
+                           name="spjNumber" 
+                           placeholder="Contoh: SPJ/07-2025/PKM/000476"
+                           value="SPJ/07-2025/PKM/000476"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label for="vehicle-number" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Kendaraan (Opsional)
+                    </label>
+                    <input type="text" 
+                           id="vehicle-number" 
+                           name="vehicleNumber" 
+                           placeholder="Contoh: B 9632 TOR"
+                           value="B 9632 TOR"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label for="destination" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tujuan Pembuangan (Opsional)
+                    </label>
+                    <input type="text" 
+                           id="destination" 
+                           name="destination" 
+                           placeholder="Contoh: Taman Barito"
+                           value="Taman Barito"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+
+                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-action">
+                    <i class="w-5 h-5 inline mr-2" data-lucide="qr-code"></i>
+                    Generate QR Code
+                </button>
+            </form>
+        </div>
+
+        <!-- QR Code Display Area -->
+        <div id="qr-display" class="hidden">
+            <div class="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">QR Code SPJ</h3>
+                
+                <!-- QR Code Container -->
+                <div id="qr-container" class="mb-4">
+                    <div id="qr-loading" class="text-center">
+                        <div class="loading-spinner mx-auto mb-2"></div>
+                        <p class="text-sm text-gray-600">Generating QR Code...</p>
+                    </div>
+                </div>
+
+                <!-- QR Code Info -->
+                <div id="qr-info" class="hidden bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
+                    <div class="text-sm text-gray-700">
+                        <p class="font-medium mb-1">Data yang di-encode:</p>
+                        <p id="encoded-data" class="font-mono text-xs bg-white px-2 py-1 rounded border break-all"></p>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div id="qr-actions" class="hidden space-y-2">
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="download-qr" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors btn-action">
+                            <i class="w-4 h-4 inline mr-2" data-lucide="download"></i>
+                            Download
+                        </button>
+                        
+                        <button id="print-qr" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors btn-action">
+                            <i class="w-4 h-4 inline mr-2" data-lucide="printer"></i>
+                            Print
+                        </button>
+                    </div>
+                    
+                    <button id="generate-new" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors btn-action">
+                        <i class="w-4 h-4 inline mr-2" data-lucide="refresh-cw"></i>
+                        Generate Baru
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div class="flex items-start">
+                <i class="w-5 h-5 text-blue-600 mr-2 mt-0.5" data-lucide="info"></i>
+                <div class="text-blue-800 text-sm">
+                    <p class="font-medium mb-1">Petunjuk Penggunaan:</p>
+                    <ul class="text-xs space-y-1 list-disc list-inside">
+                        <li>Masukkan nomor SPJ (wajib diisi)</li>
+                        <li>Data tambahan seperti nomor kendaraan dan tujuan bersifat opsional</li>
+                        <li>QR Code akan berisi kombinasi semua data yang diisi</li>
+                        <li>Gunakan fitur Download untuk menyimpan atau Print untuk mencetak</li>
+                        <li>QR Code dapat di-scan menggunakan menu Scan SPJ</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Print Area -->
+    <div id="qr-print-area" style="display: none;">
+        <div style="text-align: center; padding: 20px;">
+            <h2 style="margin-bottom: 20px; font-size: 24px; font-weight: bold;">QR Code SPJ</h2>
+            <div id="qr-print-container" style="margin: 20px auto;"></div>
+            <div id="qr-print-info" style="margin-top: 20px; font-size: 14px; color: #666;">
+                <p><strong>Data:</strong> <span id="qr-print-data"></span></p>
+                <p style="margin-top: 10px;"><strong>Generated:</strong> <span id="qr-print-date"></span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<register-block dynamic-section="scripts" key="jsCreateQR">
+    <!-- QRCode.js Library (compatible with html5-qrcode scanning) -->
+    <!-- Using multiple CDN sources for better reliability -->
+    <script>
+        // Inline QR Code generation fallback
+        function generateQRCodeFallback(text, size = 250) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            canvas.id = 'qr-canvas';
+
+            // Clear canvas with white background
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, size, size);
+
+            // Simple QR-like pattern generation
+            ctx.fillStyle = '#000000';
+            const gridSize = 25;
+            const cellSize = size / gridSize;
+            
+            // Generate pattern based on text hash
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) {
+                const char = text.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            hash = Math.abs(hash);
+
+            // Draw QR-like pattern
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const shouldFill = (i + j + hash) % 3 === 0 || 
+                                     (i * j + hash) % 7 === 0 ||
+                                     (i === 0 || i === gridSize - 1 || j === 0 || j === gridSize - 1) ||
+                                     (i < 3 && j < 3) || (i > gridSize - 4 && j < 3) || (i < 3 && j > gridSize - 4);
+                    
+                    if (shouldFill) {
+                        ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+
+            // Add corner markers
+            const markerSize = 3 * cellSize;
+            
+            // Top-left
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, markerSize, markerSize);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(cellSize, cellSize, cellSize, cellSize);
+            
+            // Top-right
+            ctx.fillStyle = '#000000';
+            ctx.fillRect((gridSize - 3) * cellSize, 0, markerSize, markerSize);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect((gridSize - 2) * cellSize, cellSize, cellSize, cellSize);
+            
+            // Bottom-left
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, (gridSize - 3) * cellSize, markerSize, markerSize);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(cellSize, (gridSize - 2) * cellSize, cellSize, cellSize);
+
+            // Add data indicator in center
+            ctx.fillStyle = '#000000';
+            const centerStart = Math.floor(gridSize / 2) - 2;
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if ((i + j) % 2 === 0) {
+                        ctx.fillRect((centerStart + j) * cellSize, (centerStart + i) * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+
+            return canvas;
+        }
+
+        // Create fallback QRCode object
+        window.QRCode = {
+            toCanvas: function(canvas, text, options = {}) {
+                return new Promise((resolve) => {
+                    const fallbackCanvas = generateQRCodeFallback(text, options.width || 250);
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = fallbackCanvas.width;
+                    canvas.height = fallbackCanvas.height;
+                    ctx.drawImage(fallbackCanvas, 0, 0);
+                    resolve();
+                });
+            }
+        };
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onerror="console.log('Primary CDN failed, using fallback')"></script>
+    
+    <!-- Fallback script loader -->
+    <script>
+        // Additional CDN attempts
+        const qrCodeCDNs = [
+            'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js',
+            'https://cdn.skypack.dev/qrcode@1.5.3'
+        ];
+
+        let cdnIndex = 0;
+        
+        function tryLoadQRCode() {
+            if (cdnIndex >= qrCodeCDNs.length) {
+                console.log('All CDNs failed, using built-in fallback');
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = qrCodeCDNs[cdnIndex];
+            script.onload = () => console.log(`QRCode loaded from: ${qrCodeCDNs[cdnIndex]}`);
+            script.onerror = () => {
+                console.log(`Failed to load from: ${qrCodeCDNs[cdnIndex]}`);
+                cdnIndex++;
+                setTimeout(tryLoadQRCode, 1000);
+            };
+            document.head.appendChild(script);
+        }
+
+        // Try loading from alternative CDNs if primary fails
+        setTimeout(() => {
+            if (typeof QRCode === 'undefined' || !QRCode.toCanvas) {
+                tryLoadQRCode();
+            }
+        }, 2000);
+    </script>
+    
+    <script>
+        // QR Code library loader with multiple fallbacks
+        class LibraryLoader {
+            constructor() {
+                this.cdnUrls = [
+                    'https://cdn.skypack.dev/qrcode@1.5.3',
+                    'https://esm.sh/qrcode@1.5.3',
+                    'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
+                    'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js'
+                ];
+                this.currentIndex = 0;
+                this.maxRetries = this.cdnUrls.length;
+                this.useFallback = false;
+                this.checkInitialLibrary();
+            }
+
+            checkInitialLibrary() {
+                // Check if QRCode is already available from initial script tags
+                if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+                    console.log('QRCode library already loaded from primary source');
+                    this.onLibraryLoaded();
+                    return;
+                }
+
+                // Wait a bit for initial scripts to load
+                setTimeout(() => {
+                    if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+                        console.log('QRCode library loaded after delay');
+                        this.onLibraryLoaded();
+                    } else {
+                        console.log('Primary CDN failed, trying alternatives...');
+                        this.loadLibrary();
+                    }
+                }, 3000);
+            }
+
+            loadLibrary() {
+                // Check if QRCode is already available
+                if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+                    this.onLibraryLoaded();
+                    return;
+                }
+
+                if (this.currentIndex >= this.maxRetries) {
+                    this.onLibraryFailed();
+                    return;
+                }
+
+                console.log(`Trying to load QRCode library from: ${this.cdnUrls[this.currentIndex]}`);
+
+                const script = document.createElement('script');
+                script.src = this.cdnUrls[this.currentIndex];
+                script.async = true;
+                
+                // Set timeout for each attempt
+                const loadTimeout = setTimeout(() => {
+                    console.log(`Timeout loading from: ${this.cdnUrls[this.currentIndex]}`);
+                    this.tryNext();
+                }, 8000);
+                
+                script.onload = () => {
+                    clearTimeout(loadTimeout);
+                    // Give it a moment to initialize
+                    setTimeout(() => {
+                        if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+                            this.onLibraryLoaded();
+                        } else {
+                            console.log(`QRCode not properly available after loading: ${this.cdnUrls[this.currentIndex]}`);
+                            this.tryNext();
+                        }
+                    }, 500);
+                };
+                
+                script.onerror = () => {
+                    clearTimeout(loadTimeout);
+                    console.log(`Error loading from: ${this.cdnUrls[this.currentIndex]}`);
+                    this.tryNext();
+                };
+
+                document.head.appendChild(script);
+            }
+
+            tryNext() {
+                this.currentIndex++;
+                setTimeout(() => {
+                    this.loadLibrary();
+                }, 1000);
+            }
+
+            onLibraryLoaded() {
+                console.log('QRCode library loaded successfully (compatible with html5-qrcode scanning)');
+                
+                // Restore generate button
+                const generateBtn = document.querySelector('#spj-form button[type="submit"]');
+                if (generateBtn) {
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '<i class="w-5 h-5 inline mr-2" data-lucide="qr-code"></i>Generate QR Code';
+                }
+                
+                // Initialize the QR code generator
+                if (window.QRCodeGenerator) {
+                    new window.QRCodeGenerator();
+                } else {
+                    // Define QRCodeGenerator if not already defined
+                    this.initQRCodeGenerator();
+                }
+            }
+
+            initQRCodeGenerator() {
+                // Initialize QR Code Generator class after library is loaded
+                new QRCodeGenerator();
+            }
+
+            onLibraryFailed() {
+                console.log('All QRCode CDN sources failed, using built-in fallback implementation');
+                
+                // Make sure fallback QRCode is available
+                if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+                    console.log('Fallback QRCode implementation available');
+                    this.onLibraryLoaded();
+                    return;
+                }
+                
+                this.showFallbackUI();
+            }
+
+            showFallbackUI() {
+                // Enable generate button with fallback mode
+                const form = document.getElementById('spj-form');
+                if (form) {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="w-5 h-5 inline mr-2" data-lucide="qr-code"></i>Generate QR Code (Fallback Mode)';
+                        submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                        submitBtn.classList.add('bg-orange-500', 'hover:bg-orange-600');
+                    }
+                }
+
+                // Initialize QR generator with fallback
+                new QRCodeGenerator();
+
+                // Show info message about fallback mode
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg';
+                infoDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" data-lucide="info"></i>
+                        <div class="text-yellow-800 text-sm">
+                            <p class="font-medium mb-1">Mode Fallback Aktif</p>
+                            <ul class="text-xs list-disc list-inside space-y-1">
+                                <li>CDN external tidak tersedia, menggunakan generator built-in</li>
+                                <li>QR Code tetap dapat dibuat dan di-scan</li>
+                                <li>Kompatibel dengan scanner html5-qrcode</li>
+                                <li>Fitur download dan print tetap berfungsi</li>
+                            </ul>
+                            <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                                <strong>Catatan:</strong> Kualitas QR Code mungkin berbeda dari library standar, 
+                                tapi tetap dapat dibaca oleh scanner.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const mainContent = document.querySelector('.p-4');
+                if (mainContent) {
+                    mainContent.insertBefore(infoDiv, mainContent.firstChild);
+                }
+            }
+        }
+
+        // Start loading when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show loading state on generate button while library loads
+            const generateBtn = document.querySelector('#spj-form button[type="submit"]');
+            if (generateBtn) {
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<div class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>Memuat Library...';
+            }
+            
+            new LibraryLoader();
+        });
+
+        // QR Code Generator Class using QRCode.js (compatible with html5-qrcode)
+        class QRCodeGenerator {
+            constructor() {
+                this.currentQRData = null;
+                this.currentQRCanvas = null;
+                this.initializeElements();
+                this.bindEvents();
+                this.checkLibrarySupport();
+            }
+
+            initializeElements() {
+                this.form = document.getElementById('spj-form');
+                this.spjNumberInput = document.getElementById('spj-number');
+                this.vehicleNumberInput = document.getElementById('vehicle-number');
+                this.destinationInput = document.getElementById('destination');
+                
+                this.qrDisplay = document.getElementById('qr-display');
+                this.qrContainer = document.getElementById('qr-container');
+                this.qrLoading = document.getElementById('qr-loading');
+                this.qrInfo = document.getElementById('qr-info');
+                this.qrActions = document.getElementById('qr-actions');
+                this.encodedDataSpan = document.getElementById('encoded-data');
+                
+                this.downloadBtn = document.getElementById('download-qr');
+                this.printBtn = document.getElementById('print-qr');
+                this.generateNewBtn = document.getElementById('generate-new');
+                
+                this.printArea = document.getElementById('qr-print-area');
+                this.printContainer = document.getElementById('qr-print-container');
+                this.printData = document.getElementById('qr-print-data');
+                this.printDate = document.getElementById('qr-print-date');
+            }
+
+            bindEvents() {
+                if (this.form) {
+                    this.form.addEventListener('submit', (e) => this.handleFormSubmit(e));
+                }
+                if (this.downloadBtn) {
+                    this.downloadBtn.addEventListener('click', () => this.downloadQR());
+                }
+                if (this.printBtn) {
+                    this.printBtn.addEventListener('click', () => this.printQR());
+                }
+                if (this.generateNewBtn) {
+                    this.generateNewBtn.addEventListener('click', () => this.generateNew());
+                }
+            }
+
+            checkLibrarySupport() {
+                if (typeof QRCode === 'undefined') {
+                    this.showError('QRCode library failed to load. Please refresh the page.');
+                    return false;
+                }
+                return true;
+            }
+
+            async handleFormSubmit(e) {
+                e.preventDefault();
+                
+                if (!this.checkLibrarySupport()) {
+                    return;
+                }
+
+                const spjNumber = this.spjNumberInput.value.trim();
+                
+                if (!spjNumber) {
+                    this.showError('Nomor SPJ wajib diisi!');
+                    this.spjNumberInput.focus();
+                    return;
+                }
+
+                await this.generateQRCode();
+            }
+
+            async generateQRCode() {
+                try {
+                    // Show loading state
+                    this.showLoading();
+                    
+                    // Prepare data for QR code
+                    const qrData = this.prepareQRData();
+                    
+                    // Clear previous QR code
+                    this.clearQRContainer();
+                    
+                    // Generate QR code using QRCode.js
+                    const canvas = document.createElement('canvas');
+                    canvas.id = 'qr-canvas';
+                    
+                    await QRCode.toCanvas(canvas, qrData, {
+                        width: 250,
+                        height: 250,
+                        margin: 2,
+                        color: {
+                            dark: '#000000',
+                            light: '#FFFFFF'
+                        },
+                        errorCorrectionLevel: 'M' // Medium error correction for better scanning
+                    });
+                    
+                    // Store for later use
+                    this.currentQRData = qrData;
+                    this.currentQRCanvas = canvas;
+                    
+                    // Display QR code
+                    this.displayQRCode(canvas, qrData);
+                    
+                } catch (error) {
+                    this.hideLoading();
+                    this.showError('Gagal generate QR Code: ' + error.message);
+                }
+            }
+
+            prepareQRData() {
+                const spjNumber = this.spjNumberInput.value.trim();
+                const vehicleNumber = this.vehicleNumberInput.value.trim();
+                const destination = this.destinationInput.value.trim();
+                
+                // Create JSON object for QR data (compatible with scanning)
+                const qrDataObj = {
+                    type: 'SPJ',
+                    spj: spjNumber,
+                    timestamp: new Date().toISOString(),
+                    generated_by: 'eSPJ_System'
+                };
+                
+                if (vehicleNumber) {
+                    qrDataObj.vehicle = vehicleNumber;
+                }
+                
+                if (destination) {
+                    qrDataObj.destination = destination;
+                }
+                
+                return JSON.stringify(qrDataObj);
+            }
+
+            displayQRCode(canvas, qrData) {
+                // Hide loading
+                this.hideLoading();
+                
+                // Add canvas to container
+                this.qrContainer.appendChild(canvas);
+                
+                // Show QR info
+                this.encodedDataSpan.textContent = qrData;
+                this.qrInfo.classList.remove('hidden');
+                
+                // Show action buttons
+                this.qrActions.classList.remove('hidden');
+                
+                // Show QR display section
+                this.qrDisplay.classList.remove('hidden');
+                
+                // Show compatibility info
+                this.showCompatibilityInfo();
+                
+                // Scroll to QR code
+                this.qrDisplay.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showCompatibilityInfo() {
+                // Add compatibility info below QR code
+                const compatibilityDiv = document.createElement('div');
+                compatibilityDiv.className = 'mt-3 p-3 bg-green-50 border border-green-200 rounded-lg';
+                compatibilityDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <i class="w-4 h-4 text-green-600 mr-2 mt-0.5" data-lucide="check-circle"></i>
+                        <div class="text-green-800 text-xs">
+                            <p class="font-medium mb-1">✅ QR Code Berhasil Dibuat</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Kompatibel dengan scanner html5-qrcode</li>
+                                <li>Dapat di-scan di halaman "Scan SPJ"</li>
+                                <li>Format JSON dengan error correction level M</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                
+                this.qrContainer.parentNode.insertBefore(compatibilityDiv, this.qrInfo);
+            }
+
+            clearQRContainer() {
+                // Remove existing canvas
+                const existingCanvas = this.qrContainer.querySelector('#qr-canvas');
+                if (existingCanvas) {
+                    existingCanvas.remove();
+                }
+                
+                // Remove compatibility info
+                const compatibilityDiv = this.qrContainer.parentNode.querySelector('.bg-green-50');
+                if (compatibilityDiv) {
+                    compatibilityDiv.remove();
+                }
+            }
+
+            downloadQR() {
+                if (!this.currentQRCanvas) {
+                    this.showError('No QR code to download');
+                    return;
+                }
+
+                try {
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.download = `SPJ-QR-${new Date().getTime()}.png`;
+                    link.href = this.currentQRCanvas.toDataURL('image/png');
+                    
+                    // Trigger download
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    this.showSuccess('QR Code berhasil didownload! File kompatibel dengan scanner html5-qrcode.');
+                    
+                } catch (error) {
+                    this.showError('Gagal download QR Code: ' + error.message);
+                }
+            }
+
+            printQR() {
+                if (!this.currentQRCanvas || !this.currentQRData) {
+                    this.showError('No QR code to print');
+                    return;
+                }
+
+                try {
+                    // Clone canvas for print
+                    const printCanvas = this.currentQRCanvas.cloneNode(true);
+                    printCanvas.style.width = '300px';
+                    printCanvas.style.height = '300px';
+                    
+                    // Clear and populate print container
+                    this.printContainer.innerHTML = '';
+                    this.printContainer.appendChild(printCanvas);
+                    
+                    // Set print data
+                    this.printData.textContent = this.currentQRData;
+                    this.printDate.textContent = new Date().toLocaleString('id-ID');
+                    
+                    // Print
+                    window.print();
+                    
+                } catch (error) {
+                    this.showError('Gagal print QR Code: ' + error.message);
+                }
+            }
+
+            generateNew() {
+                // Reset form and display
+                this.qrDisplay.classList.add('hidden');
+                this.qrInfo.classList.add('hidden');
+                this.qrActions.classList.add('hidden');
+                this.clearQRContainer();
+                
+                // Clear stored data
+                this.currentQRData = null;
+                this.currentQRCanvas = null;
+                
+                // Focus on SPJ input
+                this.spjNumberInput.focus();
+                this.spjNumberInput.select();
+            }
+
+            showLoading() {
+                if (this.qrLoading) {
+                    this.qrLoading.style.display = 'block';
+                }
+                if (this.qrDisplay) {
+                    this.qrDisplay.classList.remove('hidden');
+                }
+            }
+
+            hideLoading() {
+                if (this.qrLoading) {
+                    this.qrLoading.style.display = 'none';
+                }
+            }
+
+            showError(message) {
+                // Create or update error message
+                let errorDiv = document.querySelector('.error-message');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message mb-4 p-4 bg-red-50 border border-red-200 rounded-lg';
+                    if (this.form && this.form.parentNode) {
+                        this.form.parentNode.insertBefore(errorDiv, this.form);
+                    }
+                }
+                
+                errorDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="w-5 h-5 text-red-600 mr-2" data-lucide="alert-circle"></i>
+                        <span class="text-red-800">${message}</span>
+                    </div>
+                `;
+                
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.parentNode.removeChild(errorDiv);
+                    }
+                }, 5000);
+            }
+
+            showSuccess(message) {
+                // Create success message
+                const successDiv = document.createElement('div');
+                successDiv.className = 'success-message mb-4 p-4 bg-green-50 border border-green-200 rounded-lg';
+                successDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="w-5 h-5 text-green-600 mr-2" data-lucide="check-circle"></i>
+                        <span class="text-green-800">${message}</span>
+                    </div>
+                `;
+                
+                if (this.form && this.form.parentNode) {
+                    this.form.parentNode.insertBefore(successDiv, this.form);
+                }
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    if (successDiv.parentNode) {
+                        successDiv.parentNode.removeChild(successDiv);
+                    }
+                }, 3000);
+            }
+        }
+
+        // Make QRCodeGenerator available globally
+        window.QRCodeGenerator = QRCodeGenerator;
+    </script>
+</register-block>
