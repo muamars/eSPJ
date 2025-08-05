@@ -5,37 +5,9 @@
 
 @section Styles {
     <link rel="stylesheet" href="@Url.Content("~/driver/css/scanner.css")" asp-append-version="true" />
-    <style>
-        .auto-filled {
-            background-color: #dcfce7 !important;
-            border-color: #16a34a !important;
-            transition: all 0.3s ease;
-        }
-        
-        .ocr-success {
-            animation: slideInUp 0.5s ease-out;
-        }
-        
-        @@keyframes slideInUp {
-            from {
-                transform: translateY(20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        .upload-label:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-    </style>
 }
 
 <div class="max-w-sm mx-auto bg-white min-h-screen">
-    <!-- Header with Orange Background -->
     <div class="bg-orange-500 text-white px-3 py-4 rounded-b-2xl relative pb-12">
         <div class="flex items-center justify-between">
             <a href="@Url.Action("Index", "Home")" class="p-1 hover:bg-white/10 rounded-full transition-colors">
@@ -47,7 +19,6 @@
     </div>
 
     <div class="px-8 py-4">
-        <!-- Camera Scanner Section -->
         <div class="mb-6">
             <div class="flex flex-col items-center space-y-2 mb-4">
                 <div class="bg-orange-100 rounded-full p-3">
@@ -58,7 +29,13 @@
                 
         </div>
 
-            <!-- Scanner Container -->
+            <div id="ocr-processing" class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <div class="flex items-center">
+                    <div class="loading-spinner-small mr-2"></div>
+                    <span class="text-yellow-800 text-sm">Memproses teks dari struk...</span>
+                </div>
+            </div>  
+
             <div class="scanner-container mb-4" style="height: 300px;">
                 <div id="scanner-container" class="w-full h-full relative bg-gray-900 rounded-lg overflow-hidden">
                     <div id="loading-scanner" class="absolute inset-0 bg-gray-900 flex items-center justify-center z-10">
@@ -70,7 +47,6 @@
                 </div>
             </div>
 
-            <!-- Scanner Controls -->
             <div class="space-y-3 mb-4">
                 <button id="start-scanner" type="button" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-scanner">
                     <i class="w-5 h-5 inline mr-2" data-lucide="camera"></i>
@@ -82,7 +58,6 @@
                     Hentikan Scan
                 </button>
 
-                <!-- Upload File Option -->
                
                     <div class="flex items-center">
                         <div class="flex-1 border-t border-gray-200"></div>
@@ -104,7 +79,6 @@
                     </p>
          
 
-                <!-- Permission Messages -->
                 <div id="permission-info" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <div class="flex items-start">
                         <i class="w-5 h-5 text-blue-600 mr-2 mt-0.5" data-lucide="info"></i>
@@ -135,15 +109,8 @@
                     </div>
                 </div>
 
-                <!-- OCR Processing Message -->
-                <div id="ocr-processing" class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <div class="flex items-center">
-                        <div class="loading-spinner-small mr-2"></div>
-                        <span class="text-yellow-800 text-sm">Memproses teks dari struk...</span>
-                    </div>
-                </div>
+              
 
-                <!-- Success Message (will be shown temporarily) -->
                 <div id="scan-success" class="hidden bg-green-50 border border-green-200 rounded-lg p-3">
                     <div class="flex items-center">
                         <i class="w-5 h-5 text-green-600 mr-2" data-lucide="check-circle"></i>
@@ -281,7 +248,6 @@
             </button>
         </form>
     
-        <!-- Bottom Navigation -->
         <partial name="~/Views/Admin/Transport/SpjDriver/Shared/Components/_Navigation.cshtml" />
 
 </div>
@@ -299,9 +265,7 @@
         const beratKeluarInput = document.getElementById('BeratKeluar');
         const beratNettInput = document.getElementById('BeratNett');
 
-        // Input validation for manual entry
         nomorStrukInput.addEventListener('input', function() {
-            // Only allow numbers for receipt number (remove 08_ prefix automatically)
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
@@ -317,7 +281,6 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        // Initialize Receipt Scanner with OCR
         class ReceiptScanner {
             constructor() {
                 this.isScanning = false;
@@ -335,6 +298,7 @@
                     weightOut: '',
                     weightNett: ''
                 };
+                this.ocrTimeout = null;
                 this.initializeElements();
                 this.bindEvents();
                 this.checkBrowserSupport();
@@ -367,14 +331,12 @@
                     fileUpload: !!this.fileUpload
                 });
 
-                // Check for missing critical elements
                 if (!this.fileUpload) {
                     console.error('CRITICAL: File upload input not found! Looking for #file-upload');
                     console.log('Available file inputs:', document.querySelectorAll('input[type="file"]'));
                     console.log('All elements with file-upload in ID:', document.querySelectorAll('[id*="file-upload"]'));
                     console.log('DOM ready state:', document.readyState);
                     
-                    // Try alternative selectors
                     const altFileInput = document.querySelector('input[type="file"]');
                     if (altFileInput) {
                         console.log('Found file input via type selector:', altFileInput);
@@ -405,9 +367,6 @@
                     console.error('Stop scanner button not found!');
                 }
                 
-                // No additional buttons needed - auto-fill is automatic
-                
-                // Fix file upload binding - ensure element exists and bind properly
                 if (this.fileUpload) {
                     console.log('File upload element found, binding change event...');
                     this.fileUpload.addEventListener('change', (e) => {
@@ -417,7 +376,6 @@
                     console.log('File upload input bound successfully');
                 } else {
                     console.error('CRITICAL: File upload input not found! Element ID: file-upload');
-                    // Try to find it again
                     const fileInput = document.querySelector('#file-upload');
                     if (fileInput) {
                         console.log('Found file input via querySelector, binding now...');
@@ -456,7 +414,6 @@
                     this.hideMessages();
                     this.permissionInfo.classList.remove('hidden');
 
-                    // Get camera access
                     this.stream = await navigator.mediaDevices.getUserMedia({
                         video: { 
                             facingMode: 'environment',
@@ -472,8 +429,15 @@
                     this.hideLoading();
                     this.hideMessages();
 
-                    // Start continuous capture for OCR
                     this.startContinuousCapture();
+
+                    if (this.ocrTimeout) clearTimeout(this.ocrTimeout);
+                    this.ocrTimeout = setTimeout(() => {
+                        if (this.isScanning && !this.hasDetectedData()) {
+                            this.stopScanner();
+                            this.showError('Gagal scan struk. Silakan input data secara manual.');
+                        }
+                    }, 30000);
 
                 } catch (error) {
                     this.handleCameraError(error);
@@ -481,28 +445,28 @@
                 }
             }
 
+            hasDetectedData() {
+                const d = this.detectedData;
+                return d && (d.receiptNumber || d.truckNumber || d.assignment || d.entryTime || d.exitTime || d.weightIn || d.weightOut || d.weightNett);
+            }
+
             setupVideoElement() {
-                // Create video element
                 this.video = document.createElement('video');
                 this.video.autoplay = true;
                 this.video.playsInline = true;
                 this.video.muted = true;
                 this.video.srcObject = this.stream;
                 
-                // Style video element
                 this.video.className = 'w-full h-full object-cover rounded-lg';
                 
-                // Clear container and add video
                 this.scannerContainer.innerHTML = '';
                 this.scannerContainer.appendChild(this.video);
 
-                // Create canvas for capture
                 this.canvas = document.createElement('canvas');
                 this.ctx = this.canvas.getContext('2d');
             }
 
             startContinuousCapture() {
-                // Capture frame every 3 seconds for OCR processing
                 const captureInterval = setInterval(() => {
                     if (!this.isScanning) {
                         clearInterval(captureInterval);
@@ -516,14 +480,11 @@
                 if (!this.video || !this.canvas || !this.isScanning) return;
 
                 try {
-                    // Set canvas size to video size
                     this.canvas.width = this.video.videoWidth;
                     this.canvas.height = this.video.videoHeight;
                     
-                    // Draw video frame to canvas
                     this.ctx.drawImage(this.video, 0, 0);
                     
-                    // Convert to blob for OCR
                     this.canvas.toBlob(async (blob) => {
                         await this.processImageWithOCR(blob);
                     }, 'image/jpeg', 0.8);
@@ -534,27 +495,22 @@
             }
 
             setupVideoElement() {
-                // Create video element
                 this.video = document.createElement('video');
                 this.video.autoplay = true;
                 this.video.playsInline = true;
                 this.video.muted = true;
                 this.video.srcObject = this.stream;
                 
-                // Style video element
                 this.video.className = 'w-full h-full object-cover rounded-lg';
                 
-                // Clear container and add video
                 this.scannerContainer.innerHTML = '';
                 this.scannerContainer.appendChild(this.video);
 
-                // Create canvas for capture
                 this.canvas = document.createElement('canvas');
                 this.ctx = this.canvas.getContext('2d');
             }
 
             startContinuousCapture() {
-                // Capture frame every 3 seconds for OCR processing
                 const captureInterval = setInterval(() => {
                     if (!this.isScanning) {
                         clearInterval(captureInterval);
@@ -568,14 +524,11 @@
                 if (!this.video || !this.canvas || !this.isScanning) return;
 
                 try {
-                    // Set canvas size to video size
                     this.canvas.width = this.video.videoWidth;
                     this.canvas.height = this.video.videoHeight;
                     
-                    // Draw video frame to canvas
                     this.ctx.drawImage(this.video, 0, 0);
                     
-                    // Convert to blob for OCR
                     this.canvas.toBlob(async (blob) => {
                         await this.processImageWithOCR(blob);
                     }, 'image/jpeg', 0.8);
@@ -589,15 +542,12 @@
                 try {
                     this.showOcrProcessing();
 
-                    // Enhanced OCR configuration for better Indonesian text recognition
                     const { data: { text } } = await Tesseract.recognize(
                         imageInput,
                         'ind+eng',
                         {
                             logger: m => {
-                                // Show OCR progress
                                 if (m.status === 'recognizing text') {
-                                    console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
                                 }
                             },
                             tessedit_pageseg_mode: Tesseract.PSM.AUTO,
@@ -609,7 +559,6 @@
                     this.hideOcrProcessing();
 
                 } catch (error) {
-                    console.error('OCR Error:', error);
                     this.hideOcrProcessing();
                     this.showError('Gagal membaca teks dari gambar. Coba dengan pencahayaan yang lebih baik.');
                 }
@@ -617,8 +566,6 @@
 
             async extractDataFromText(text) {
                 const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-                console.log('OCR Text Lines:', lines); // Debug log
-                console.log('Full OCR Text:', text); // Debug log
                 
                 let receiptNumber = '';
                 let truckNumber = '';
@@ -629,19 +576,16 @@
                 let weightOut = '';
                 let weightNett = '';
 
-                // Enhanced patterns for better detection
-                // Extract receipt number (multiple patterns)
                 const receiptPatterns = [
-                    /(\d{2})\s+(\d{7,})/gi, // Pattern like "08 8001441" - take second group
-                    /(\d{2})_(\d{7,})/gi, // Pattern like "08_8001441" - take second group
-                    /(?:no.*struk|nomor.*struk|receipt)[\s.:]*(\d{7,})/gi, // Near "nomor struk"
-                    /(?:^|\s)(\d{7,10})(?:\s|$)/g, // Standalone 7-10 digit numbers
+                    /(\d{2})\s+(\d{7,})/gi, 
+                    /(\d{2})_(\d{7,})/gi, 
+                    /(?:no.*struk|nomor.*struk|receipt)[\s.:]*(\d{7,})/gi,
+                    /(?:^|\s)(\d{7,10})(?:\s|$)/g, 
                 ];
 
                 for (const line of lines) {
                     console.log(`Processing line for receipt: "${line}"`);
                     
-                    // Special handling for "08 8001441" or "08_8001441" format
                     const monthNumberMatch = line.match(/(\d{2})\s+(\d{7,})/);
                     if (monthNumberMatch && monthNumberMatch[2]) {
                         receiptNumber = monthNumberMatch[2]; // Take the number after space/underscore
@@ -671,30 +615,22 @@
                     if (receiptNumber) break;
                 }
 
-                // Enhanced truck number patterns - more comprehensive for Indonesian plates
                 const truckPatterns = [
-                    // Standard Indonesian plate patterns
                     /([A-Z]\s+\d{1,4}\s+[A-Z]{2,3})/gi, // "B 9125 PJA" (with spaces)
                     /([A-Z]\d{1,4}\s+[A-Z]{2,3})/gi, // "B9125 PJA" (no space before number)
                     /([A-Z]{1,2}\s*\d{1,4}\s*[A-Z]{1,3})/gi, // Flexible spacing
                     
-                    // Patterns with context keywords
                     /(?:no.*pol|nopol|nomor.*polisi|no.*truk|nomor.*truk)[\s.:]*([A-Z]{1,2}\s*\d{1,4}\s*[A-Z]{1,3})/gi,
                     
-                    // More flexible patterns for OCR errors
-                    /([A-Z]\s*\d{3,4}\s*[A-Z]{2,3})/gi, // Allow for OCR spacing issues
                     /([A-Z]{1,2}\d{3,4}[A-Z]{2,3})/gi, // No spaces at all
                     
-                    // Pattern for when OCR reads as separate words
                     /([A-Z])\s+(\d{3,4})\s+([A-Z]{2,3})/gi, // Separate capture groups
                 ];
 
-                // First pass - look for lines with truck number context
                 for (const line of lines) {
                     const lowerLine = line.toLowerCase();
                     console.log(`Processing line for truck: "${line}"`);
                     
-                    // Check for context keywords first
                     if (lowerLine.includes('nopol') || 
                         lowerLine.includes('no pol') ||
                         lowerLine.includes('nomor polisi') ||
@@ -703,27 +639,22 @@
                         lowerLine.includes('polisi')) {
                         console.log('Found truck context line:', line);
                         
-                        // Try to extract truck number from this line
                         for (const pattern of truckPatterns) {
                             const match = line.match(pattern);
                             if (match) {
                                 let foundTruck = '';
                                 
-                                // Handle different match groups
                                 if (match.length === 4 && match[1] && match[2] && match[3]) {
-                                    // Separate groups: "B", "9125", "PJA"
                                     foundTruck = `${match[1]} ${match[2]} ${match[3]}`;
                                 } else if (match[1]) {
                                     foundTruck = match[1].trim();
                                 }
                                 
                                 if (foundTruck) {
-                                    // Normalize the truck number format
                                     foundTruck = foundTruck.replace(/([A-Z])(\d+)(\s+[A-Z]{2,3})/g, '$1 $2$3');
                                     foundTruck = foundTruck.replace(/([A-Z]{1,2})(\d{3,4})([A-Z]{2,3})/g, '$1 $2 $3');
                                     foundTruck = foundTruck.replace(/\s+/g, ' ').trim();
                                     
-                                    // Validate format (should be like "B 9125 PJA")
                                     if (foundTruck.match(/^[A-Z]{1,2}\s+\d{3,4}\s+[A-Z]{2,3}$/)) {
                                         truckNumber = foundTruck;
                                         console.log(`Found truck number: "${truckNumber}" using context pattern`);
@@ -736,13 +667,11 @@
                     }
                 }
                 
-                // Second pass - look for any line that might contain truck number pattern
                 if (!truckNumber) {
                     console.log('No truck number found in context lines, trying all lines...');
                     for (const line of lines) {
                         console.log(`Scanning line for truck pattern: "${line}"`);
                         
-                        // Check if line contains potential truck number pattern
                         if (line.match(/[A-Z]\s*\d+\s*[A-Z]{2,3}/i)) {
                             console.log('Potential truck pattern found:', line);
                             
@@ -758,12 +687,10 @@
                                     }
                                     
                                     if (foundTruck) {
-                                        // Normalize format
                                         foundTruck = foundTruck.replace(/([A-Z])(\d+)(\s+[A-Z]{2,3})/g, '$1 $2$3');
                                         foundTruck = foundTruck.replace(/([A-Z]{1,2})(\d{3,4})([A-Z]{2,3})/g, '$1 $2 $3');
                                         foundTruck = foundTruck.replace(/\s+/g, ' ').trim();
                                         
-                                        // Validate format
                                         if (foundTruck.match(/^[A-Z]{1,2}\s+\d{3,4}\s+[A-Z]{2,3}$/)) {
                                             truckNumber = foundTruck;
                                             console.log(`Found truck number: "${truckNumber}" using general pattern`);
@@ -777,17 +704,14 @@
                     }
                 }
                 
-                // Third pass - try to find truck number in any format and clean it up
                 if (!truckNumber) {
                     console.log('Still no truck number, trying loose patterns...');
                     for (const line of lines) {
-                        // Very loose pattern - any letter followed by numbers followed by letters
                         const looseMatch = line.match(/([A-Z]{1,2})\s*(\d{3,4})\s*([A-Z]{2,3})/i);
                         if (looseMatch && looseMatch[1] && looseMatch[2] && looseMatch[3]) {
                             const candidate = `${looseMatch[1].toUpperCase()} ${looseMatch[2]} ${looseMatch[3].toUpperCase()}`;
                             console.log(`Found potential truck number with loose pattern: "${candidate}"`);
                             
-                            // Additional validation - check if it looks like Indonesian plate
                             if (looseMatch[1].length <= 2 && 
                                 looseMatch[2].length >= 3 && looseMatch[2].length <= 4 &&
                                 looseMatch[3].length >= 2 && looseMatch[3].length <= 3) {
@@ -803,7 +727,6 @@
                 
                 console.log('Truck detection result:', truckNumber);
 
-                // Enhanced assignment patterns
                 const assignmentPatterns = [
                     /(?:penugasan|assignment)[\s.:]*([A-Z\s]+?)(?:\n|$)/gi,
                     /(JAKARTA\s+\w+)/gi, // Specific pattern for Jakarta areas
@@ -813,11 +736,9 @@
                 for (const line of lines) {
                     console.log(`Processing line for assignment: "${line}"`);
                     
-                    // Special check for the exact format from OCR
                     if (line.toLowerCase().includes('penugasan')) {
                         console.log('Found penugasan line:', line);
                         
-                        // Extract everything after "Penugasan :" 
                         const assignmentMatch = line.match(/penugasan\s*:\s*(.+)/i);
                         if (assignmentMatch && assignmentMatch[1]) {
                             assignment = assignmentMatch[1].trim();
@@ -826,7 +747,6 @@
                         }
                     }
                     
-                    // Check if line contains JAKARTA BARAT specifically
                     if (line.toUpperCase().includes('JAKARTA') && line.toUpperCase().includes('BARAT')) {
                         assignment = 'JAKARTA BARAT';
                         console.log(`Found assignment: ${assignment} from Jakarta Barat line`);
@@ -1036,7 +956,6 @@
                         }
                     }, 1500);
                 } else {
-                    console.log('No significant data found in OCR text');
                 }
             }
 
@@ -1271,7 +1190,6 @@
 
                 console.log(`=== APPLY COMPLETED: ${fieldsUpdated} fields updated ===`);
                 
-                // Hide OCR result after applying data
                 this.hideOcrResult();
                 
                 // Show success message and scroll to form
@@ -1337,8 +1255,6 @@
                     console.log('Displaying uploaded image...');
                     this.displayUploadedImage(file);
 
-                    // Process with OCR
-                    console.log('Starting OCR processing...');
                     await this.processImageWithOCR(file);
 
                 } catch (error) {
@@ -1387,15 +1303,12 @@
                 try {
                     this.showOcrProcessing();
 
-                    // Enhanced OCR configuration for better Indonesian text recognition
                     const { data: { text } } = await Tesseract.recognize(
                         imageInput,
                         'ind+eng',
                         {
                             logger: m => {
-                                // Show OCR progress
                                 if (m.status === 'recognizing text') {
-                                    console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
                                 }
                             },
                             tessedit_pageseg_mode: Tesseract.PSM.AUTO,
@@ -1407,7 +1320,6 @@
                     this.hideOcrProcessing();
 
                 } catch (error) {
-                    console.error('OCR Error:', error);
                     this.hideOcrProcessing();
                     this.showError('Gagal membaca teks dari gambar. Coba dengan pencahayaan yang lebih baik.');
                 }
@@ -1424,13 +1336,17 @@
                 this.stopBtn.classList.add('hidden');
                 this.hideLoading();
                 
-                // DON'T hide OCR results when stopping scanner
                 // Only hide permission and processing messages
                 this.permissionInfo.classList.add('hidden');
                 this.permissionDenied.classList.add('hidden');
                 this.ocrProcessing.classList.add('hidden');
                 // Keep this.ocrResult visible if it contains data
-                
+
+                if (this.ocrTimeout) {
+                    clearTimeout(this.ocrTimeout);
+                    this.ocrTimeout = null;
+                }
+
                 // Reset file upload
                 if (this.fileUpload) {
                     this.fileUpload.value = '';
