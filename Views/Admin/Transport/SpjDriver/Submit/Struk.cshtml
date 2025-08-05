@@ -97,7 +97,6 @@
                         type="file" 
                         id="file-upload" 
                         accept="image/*" 
-                        capture="environment"
                         class="hidden"
                     />
                     <p class="text-xs text-gray-500 mt-2 text-center">
@@ -150,7 +149,8 @@
                         <i class="w-5 h-5 text-green-600 mr-2" data-lucide="check-circle"></i>
                         <span class="text-green-800 font-medium">Data struk berhasil diisi otomatis!</span>
                     </div>
-                    <p class="text-green-700 text-sm mt-1">Periksa form di bawah dan lengkapi data jika diperlukan.</p>
+                    <p class="text-green-700 text-sm mt-1">Scanning dihentikan. Periksa form di bawah dan lengkapi data jika diperlukan.</p>
+                    <p class="text-green-700 text-xs mt-1">💡 Untuk scan ulang, klik "Mulai Scan Struk" atau "Upload Foto Struk"</p>
                 </div>
 
 
@@ -1019,13 +1019,22 @@
                     // Show success message
                     this.showScanSuccess();
                     
+                    // Auto-stop scanning after successful detection
+                    console.log('Auto-stopping scanner after successful data detection');
+                    setTimeout(() => {
+                        if (this.isScanning) {
+                            console.log('Scanner stopped automatically. User can click "Mulai Scan Struk" to scan again.');
+                            this.stopScanner();
+                        }
+                    }, 1000);
+                    
                     // Scroll to form to show filled data
                     setTimeout(() => {
                         const formSection = document.querySelector('form');
                         if (formSection) {
                             formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }
-                    }, 500);
+                    }, 1500);
                 } else {
                     console.log('No significant data found in OCR text');
                 }
@@ -1477,10 +1486,10 @@
             
             showScanSuccess() {
                 this.scanSuccess.classList.remove('hidden');
-                // Auto-hide after 3 seconds
+                // Auto-hide after 5 seconds (longer to let user read the instructions)
                 setTimeout(() => {
                     this.scanSuccess.classList.add('hidden');
-                }, 3000);
+                }, 5000);
             }
 
             showError(message) {
