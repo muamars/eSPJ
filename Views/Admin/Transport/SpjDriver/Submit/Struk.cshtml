@@ -5,6 +5,33 @@
 
 @section Styles {
     <link rel="stylesheet" href="@Url.Content("~/driver/css/scanner.css")" asp-append-version="true" />
+    <style>
+        .auto-filled {
+            background-color: #dcfce7 !important;
+            border-color: #16a34a !important;
+            transition: all 0.3s ease;
+        }
+        
+        .ocr-success {
+            animation: slideInUp 0.5s ease-out;
+        }
+        
+        @@keyframes slideInUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .upload-label:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+    </style>
 }
 
 <div class="max-w-sm mx-auto bg-white min-h-screen">
@@ -27,8 +54,9 @@
                     <i data-lucide="camera" class="w-7 h-7 text-orange-500"></i>
                 </div>
                 <h2 class="text-xl font-bold text-orange-500">Scan Struk Otomatis</h2>
-                <p class="text-sm text-gray-500 text-center">Arahkan kamera ke struk untuk membaca data secara otomatis.</p>
-            </div>
+                <p class="text-sm text-gray-500 text-center">Arahkan kamera ke struk atau upload foto struk untuk membaca data secara otomatis.</p>
+                
+        </div>
 
             <!-- Scanner Container -->
             <div class="scanner-container mb-4" style="height: 300px;">
@@ -53,6 +81,29 @@
                     <i class="w-5 h-5 inline mr-2" data-lucide="camera-off"></i>
                     Hentikan Scan
                 </button>
+
+                <!-- Upload File Option -->
+               
+                    <div class="flex items-center">
+                        <div class="flex-1 border-t border-gray-200"></div>
+                        <span class="px-3 text-sm text-gray-500 bg-white">atau</span>
+                        <div class="flex-1 border-t border-gray-200"></div>
+                    </div>
+                    <label for="file-upload" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 upload-label">
+                        <i class="w-5 h-5" data-lucide="upload"></i>
+                        Upload Foto Struk
+                    </label>
+                    <input 
+                        type="file" 
+                        id="file-upload" 
+                        accept="image/*" 
+                        capture="environment"
+                        class="hidden"
+                    />
+                    <p class="text-xs text-gray-500 mt-2 text-center">
+                        Pilih foto struk dari galeri atau ambil foto baru
+                    </p>
+         
 
                 <!-- Permission Messages -->
                 <div id="permission-info" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -93,49 +144,22 @@
                     </div>
                 </div>
 
-                <!-- OCR Result -->
-                <div id="ocr-result" class="hidden bg-green-50 border border-green-200 rounded-lg p-3">
-                    <div class="flex items-center mb-2">
+                <!-- Success Message (will be shown temporarily) -->
+                <div id="scan-success" class="hidden bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div class="flex items-center">
                         <i class="w-5 h-5 text-green-600 mr-2" data-lucide="check-circle"></i>
-                        <span class="text-green-800 font-medium">Data struk berhasil dibaca!</span>
+                        <span class="text-green-800 font-medium">Data struk berhasil diisi otomatis!</span>
                     </div>
-                    <div class="text-green-700 text-sm space-y-1">
-                        <p>Nomor Struk: <span id="detected-receipt-number" class="font-mono font-bold">-</span></p>
-                        <p>Berat Muatan: <span id="detected-weight" class="font-mono font-bold">-</span> kg</p>
-                    </div>
-                    <div class="flex gap-2 mt-3">
-                        <button id="apply-ocr-data" type="button" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors text-sm">
-                            Gunakan Data Ini
-                        </button>
-                        <button id="retry-ocr" type="button" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition-colors text-sm">
-                            Scan Ulang
-                        </button>
-                    </div>
+                    <p class="text-green-700 text-sm mt-1">Periksa form di bawah dan lengkapi data jika diperlukan.</p>
                 </div>
 
-                <!-- Tips for scanning -->
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
-                    <div class="flex items-start">
-                        <i class="w-4 h-4 text-gray-600 mr-2 mt-0.5" data-lucide="lightbulb"></i>
-                        <div class="text-gray-700">
-                            <p class="font-medium mb-1">Tips Scan Struk:</p>
-                            <ul class="text-xs space-y-1">
-                                <li>• Pastikan struk dalam pencahayaan yang cukup</li>
-                                <li>• Letakkan struk rata tanpa lipatan</li>
-                                <li>• Jaga jarak 15-30cm dari kamera</li>
-                                <li>• Tunggu beberapa detik untuk proses OCR</li>
-                                <li>• Periksa data yang terdeteksi sebelum submit</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
 
-        <!-- Divider -->
         <div class="flex items-center my-6">
             <div class="flex-1 border-t border-gray-200"></div>
-            <span class="px-3 text-sm text-gray-500 bg-white">atau input manual</span>
+            <span class="px-3 text-sm text-gray-500 bg-white">Hasil Scan</span>
             <div class="flex-1 border-t border-gray-200"></div>
         </div>
     </div>
@@ -145,41 +169,115 @@
                 <div class="bg-orange-100 rounded-full p-3">
                     <i data-lucide="edit-3" class="w-7 h-7 text-orange-500"></i>
                 </div>
-                <h2 class="text-xl font-bold text-orange-500">Input Manual</h2>
-                <p class="text-sm text-gray-500 text-center">Masukkan nomor struk dan berat muatan secara manual.</p>
+                <h2 class="text-xl font-bold text-orange-500">Data Struk</h2>
+                <p class="text-sm text-gray-500 text-center">Periksa dan lengkapi data struk sebelum submit.</p>
             </div>
             
-            <div>
-                <label for="NomorStruk" class="block text-sm font-medium text-gray-700 mb-1">Nomor Struk</label>
-                <input 
-                    type="text" 
-                    id="NomorStruk" 
-                    name="NomorStruk" 
-                    inputmode="numeric" 
-                    pattern="[0-9]*"
-                    class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
-                    required 
-                    placeholder="1234567890" 
-                />
-            </div>
-            
-            <div>
-                <label for="BeratMuatan" class="block text-sm font-medium text-gray-700 mb-1">Berat Muatan (kg)</label>
-                <input 
-                    type="text" 
-                    id="BeratMuatan" 
-                    name="BeratMuatan" 
-                    inputmode="decimal" 
-                    pattern="[0-9]*\.?[0-9]*"
-                    class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
-                    required 
-                    placeholder="1500" 
-                />
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Nomor Struk -->
+                <div>
+                    <label for="NomorStruk" class="block text-sm font-medium text-gray-700 mb-1">Nomor Struk</label>
+                    <input 
+                        type="text" 
+                        id="NomorStruk" 
+                        name="NomorStruk" 
+                        class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
+                        required 
+                        placeholder="8001441" 
+                    />
+                    <p class="text-xs text-gray-500 mt-1">Nomor tanpa prefix (contoh: 8001441)</p>
+                </div>
+
+                <!-- Nomor Polisi -->
+                <div>
+                    <label for="NomorPolisi" class="block text-sm font-medium text-gray-700 mb-1">Nomor Polisi</label>
+                    <input 
+                        type="text" 
+                        id="NomorPolisi" 
+                        name="NomorPolisi" 
+                        class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
+                        placeholder="B 9125 PJA" 
+                    />
+                </div>
+
+                <!-- Penugasan -->
+                <div>
+                    <label for="Penugasan" class="block text-sm font-medium text-gray-700 mb-1">Penugasan</label>
+                    <input 
+                        type="text" 
+                        id="Penugasan" 
+                        name="Penugasan" 
+                        class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
+                        placeholder="JAKARTA BARAT" 
+                    />
+                </div>
+
+                <!-- Waktu Masuk dan Keluar -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="WaktuMasuk" class="block text-sm font-medium text-gray-700 mb-1">Masuk</label>
+                        <input 
+                            type="text" 
+                            id="WaktuMasuk" 
+                            name="WaktuMasuk" 
+                            class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
+                            placeholder="04 Aug 2025, 08:13:51" 
+                        />
+                    </div>
+                    <div>
+                        <label for="WaktuKeluar" class="block text-sm font-medium text-gray-700 mb-1">Keluar</label>
+                        <input 
+                            type="text" 
+                            id="WaktuKeluar" 
+                            name="WaktuKeluar" 
+                            class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
+                            placeholder="04 Aug 2025, 14:35:10" 
+                        />
+                    </div>
+                </div>
+
+                <!-- Berat -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="BeratMasuk" class="block text-sm font-medium text-gray-700 mb-1">Berat Masuk (kg)</label>
+                        <input 
+                            type="number" 
+                            id="BeratMasuk" 
+                            name="BeratMasuk" 
+                            class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
+                            placeholder="23280" 
+                        />
+                    </div>
+                    <div>
+                        <label for="BeratKeluar" class="block text-sm font-medium text-gray-700 mb-1">Berat Keluar (kg)</label>
+                        <input 
+                            type="number" 
+                            id="BeratKeluar" 
+                            name="BeratKeluar" 
+                            class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
+                            placeholder="13540" 
+                        />
+                    </div>
+                </div>
+
+                <!-- Berat Nett -->
+                <div>
+                    <label for="BeratNett" class="block text-sm font-medium text-gray-700 mb-1">Berat Nett (kg)</label>
+                    <input 
+                        type="number" 
+                        id="BeratNett" 
+                        name="BeratNett" 
+                        class="mt-1 block w-full rounded-lg border border-orange-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-150 px-4 py-2" 
+                        required 
+                        placeholder="9740" 
+                    />
+                    <p class="text-xs text-gray-500 mt-1">Berat Nett wajib diisi</p>
+                </div>
             </div>
             
             <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-orange-400 text-white py-3 rounded-lg font-semibold shadow hover:from-orange-600 hover:to-orange-500 transition-all duration-150 flex items-center justify-center gap-2">
                 <i data-lucide="send" class="w-5 h-5"></i>
-                Submit
+                Submit Data Struk
             </button>
         </form>
     
@@ -193,15 +291,30 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const nomorStrukInput = document.getElementById('NomorStruk');
-        const beratMuatanInput = document.getElementById('BeratMuatan');
+        const nomorPolisiInput = document.getElementById('NomorPolisi');
+        const penugasanInput = document.getElementById('Penugasan');
+        const waktuMasukInput = document.getElementById('WaktuMasuk');
+        const waktuKeluarInput = document.getElementById('WaktuKeluar');
+        const beratMasukInput = document.getElementById('BeratMasuk');
+        const beratKeluarInput = document.getElementById('BeratKeluar');
+        const beratNettInput = document.getElementById('BeratNett');
 
         // Input validation for manual entry
         nomorStrukInput.addEventListener('input', function() {
+            // Only allow numbers for receipt number (remove 08_ prefix automatically)
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        beratMuatanInput.addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9.]/g, '');
+        beratMasukInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        beratKeluarInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        beratNettInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
         });
 
         // Initialize Receipt Scanner with OCR
@@ -214,7 +327,13 @@
                 this.ctx = null;
                 this.detectedData = {
                     receiptNumber: '',
-                    weight: ''
+                    truckNumber: '',
+                    assignment: '',
+                    entryTime: '',
+                    exitTime: '',
+                    weightIn: '',
+                    weightOut: '',
+                    weightNett: ''
                 };
                 this.initializeElements();
                 this.bindEvents();
@@ -222,6 +341,8 @@
             }
 
             initializeElements() {
+                console.log('Initializing elements...');
+                
                 this.startBtn = document.getElementById('start-scanner');
                 this.stopBtn = document.getElementById('stop-scanner');
                 this.loadingDiv = document.getElementById('loading-scanner');
@@ -229,18 +350,86 @@
                 this.ocrResult = document.getElementById('ocr-result');
                 this.permissionInfo = document.getElementById('permission-info');
                 this.permissionDenied = document.getElementById('permission-denied');
-                this.applyDataBtn = document.getElementById('apply-ocr-data');
-                this.retryOcrBtn = document.getElementById('retry-ocr');
-                this.detectedReceiptSpan = document.getElementById('detected-receipt-number');
-                this.detectedWeightSpan = document.getElementById('detected-weight');
+                this.scanSuccess = document.getElementById('scan-success');
+
                 this.scannerContainer = document.getElementById('scanner-container');
+                this.fileUpload = document.getElementById('file-upload');
+
+                console.log('Elements found:', {
+                    startBtn: !!this.startBtn,
+                    stopBtn: !!this.stopBtn,
+                    loadingDiv: !!this.loadingDiv,
+                    ocrProcessing: !!this.ocrProcessing,
+                    permissionInfo: !!this.permissionInfo,
+                    permissionDenied: !!this.permissionDenied,
+                    scanSuccess: !!this.scanSuccess,
+                    scannerContainer: !!this.scannerContainer,
+                    fileUpload: !!this.fileUpload
+                });
+
+                // Check for missing critical elements
+                if (!this.fileUpload) {
+                    console.error('CRITICAL: File upload input not found! Looking for #file-upload');
+                    console.log('Available file inputs:', document.querySelectorAll('input[type="file"]'));
+                    console.log('All elements with file-upload in ID:', document.querySelectorAll('[id*="file-upload"]'));
+                    console.log('DOM ready state:', document.readyState);
+                    
+                    // Try alternative selectors
+                    const altFileInput = document.querySelector('input[type="file"]');
+                    if (altFileInput) {
+                        console.log('Found file input via type selector:', altFileInput);
+                        this.fileUpload = altFileInput;
+                    }
+                }
+                
+                if (!this.scannerContainer) {
+                    console.error('CRITICAL: Scanner container not found! Looking for #scanner-container');
+                    console.log('Available containers:', document.querySelectorAll('[id*="scanner"]'));
+                }
             }
 
             bindEvents() {
-                this.startBtn.addEventListener('click', () => this.startScanner());
-                this.stopBtn.addEventListener('click', () => this.stopScanner());
-                this.applyDataBtn.addEventListener('click', () => this.applyDetectedData());
-                this.retryOcrBtn.addEventListener('click', () => this.retryOcr());
+                console.log('Binding events...');
+                
+                if (this.startBtn) {
+                    this.startBtn.addEventListener('click', () => this.startScanner());
+                    console.log('Start scanner button bound');
+                } else {
+                    console.error('Start scanner button not found!');
+                }
+                
+                if (this.stopBtn) {
+                    this.stopBtn.addEventListener('click', () => this.stopScanner());
+                    console.log('Stop scanner button bound');
+                } else {
+                    console.error('Stop scanner button not found!');
+                }
+                
+                // No additional buttons needed - auto-fill is automatic
+                
+                // Fix file upload binding - ensure element exists and bind properly
+                if (this.fileUpload) {
+                    console.log('File upload element found, binding change event...');
+                    this.fileUpload.addEventListener('change', (e) => {
+                        console.log('File upload change event triggered!');
+                        this.handleFileUpload(e);
+                    });
+                    console.log('File upload input bound successfully');
+                } else {
+                    console.error('CRITICAL: File upload input not found! Element ID: file-upload');
+                    // Try to find it again
+                    const fileInput = document.querySelector('#file-upload');
+                    if (fileInput) {
+                        console.log('Found file input via querySelector, binding now...');
+                        this.fileUpload = fileInput;
+                        this.fileUpload.addEventListener('change', (e) => {
+                            console.log('File upload change event triggered via querySelector!');
+                            this.handleFileUpload(e);
+                        });
+                    } else {
+                        console.error('File upload input still not found via querySelector');
+                    }
+                }
             }
 
             checkBrowserSupport() {
@@ -344,20 +533,75 @@
                 }
             }
 
-            async processImageWithOCR(imageBlob) {
+            setupVideoElement() {
+                // Create video element
+                this.video = document.createElement('video');
+                this.video.autoplay = true;
+                this.video.playsInline = true;
+                this.video.muted = true;
+                this.video.srcObject = this.stream;
+                
+                // Style video element
+                this.video.className = 'w-full h-full object-cover rounded-lg';
+                
+                // Clear container and add video
+                this.scannerContainer.innerHTML = '';
+                this.scannerContainer.appendChild(this.video);
+
+                // Create canvas for capture
+                this.canvas = document.createElement('canvas');
+                this.ctx = this.canvas.getContext('2d');
+            }
+
+            startContinuousCapture() {
+                // Capture frame every 3 seconds for OCR processing
+                const captureInterval = setInterval(() => {
+                    if (!this.isScanning) {
+                        clearInterval(captureInterval);
+                        return;
+                    }
+                    this.captureAndProcessFrame();
+                }, 3000);
+            }
+
+            async captureAndProcessFrame() {
+                if (!this.video || !this.canvas || !this.isScanning) return;
+
+                try {
+                    // Set canvas size to video size
+                    this.canvas.width = this.video.videoWidth;
+                    this.canvas.height = this.video.videoHeight;
+                    
+                    // Draw video frame to canvas
+                    this.ctx.drawImage(this.video, 0, 0);
+                    
+                    // Convert to blob for OCR
+                    this.canvas.toBlob(async (blob) => {
+                        await this.processImageWithOCR(blob);
+                    }, 'image/jpeg', 0.8);
+
+                } catch (error) {
+                    console.error('Error capturing frame:', error);
+                }
+            }
+
+            async processImageWithOCR(imageInput) {
                 try {
                     this.showOcrProcessing();
 
+                    // Enhanced OCR configuration for better Indonesian text recognition
                     const { data: { text } } = await Tesseract.recognize(
-                        imageBlob,
+                        imageInput,
                         'ind+eng',
                         {
                             logger: m => {
-                                // Optional: show OCR progress
+                                // Show OCR progress
                                 if (m.status === 'recognizing text') {
                                     console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
                                 }
-                            }
+                            },
+                            tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+                            tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz :.,/-_()kg',
                         }
                     );
 
@@ -367,105 +611,797 @@
                 } catch (error) {
                     console.error('OCR Error:', error);
                     this.hideOcrProcessing();
+                    this.showError('Gagal membaca teks dari gambar. Coba dengan pencahayaan yang lebih baik.');
                 }
             }
 
             async extractDataFromText(text) {
                 const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+                console.log('OCR Text Lines:', lines); // Debug log
+                console.log('Full OCR Text:', text); // Debug log
                 
                 let receiptNumber = '';
-                let weight = '';
+                let truckNumber = '';
+                let assignment = '';
+                let entryTime = '';
+                let exitTime = '';
+                let weightIn = '';
+                let weightOut = '';
+                let weightNett = '';
 
-                // Patterns for receipt number detection
+                // Enhanced patterns for better detection
+                // Extract receipt number (multiple patterns)
                 const receiptPatterns = [
-                    /(?:no|nomor|receipt|struk|bon)[\s.:]*([0-9]{6,})/i,
-                    /([0-9]{8,})/g, // Long number sequences
-                    /(?:ticket|tiket)[\s.:]*([0-9]+)/i
+                    /(\d{2})\s+(\d{7,})/gi, // Pattern like "08 8001441" - take second group
+                    /(\d{2})_(\d{7,})/gi, // Pattern like "08_8001441" - take second group
+                    /(?:no.*struk|nomor.*struk|receipt)[\s.:]*(\d{7,})/gi, // Near "nomor struk"
+                    /(?:^|\s)(\d{7,10})(?:\s|$)/g, // Standalone 7-10 digit numbers
                 ];
 
-                // Patterns for weight detection
-                const weightPatterns = [
-                    /(?:berat|weight|kg|kilogram)[\s.:]*([0-9]+(?:\.[0-9]+)?)/i,
-                    /([0-9]+(?:\.[0-9]+)?)[\s]*(?:kg|kilogram)/i,
-                    /(?:muatan|load)[\s.:]*([0-9]+(?:\.[0-9]+)?)/i
-                ];
-
-                // Search for receipt number
                 for (const line of lines) {
-                    for (const pattern of receiptPatterns) {
-                        const match = line.match(pattern);
-                        if (match && match[1] && match[1].length >= 6) {
-                            receiptNumber = match[1];
-                            break;
+                    console.log(`Processing line for receipt: "${line}"`);
+                    
+                    // Special handling for "08 8001441" or "08_8001441" format
+                    const monthNumberMatch = line.match(/(\d{2})\s+(\d{7,})/);
+                    if (monthNumberMatch && monthNumberMatch[2]) {
+                        receiptNumber = monthNumberMatch[2]; // Take the number after space/underscore
+                        console.log(`Found receipt number: ${receiptNumber} using month-number pattern`);
+                        break;
+                    }
+                    
+                    const monthUnderscoreMatch = line.match(/(\d{2})_(\d{7,})/);
+                    if (monthUnderscoreMatch && monthUnderscoreMatch[2]) {
+                        receiptNumber = monthUnderscoreMatch[2]; // Take the number after underscore
+                        console.log(`Found receipt number: ${receiptNumber} using month-underscore pattern`);
+                        break;
+                    }
+                    
+                    // Other patterns
+                    for (const pattern of receiptPatterns.slice(2)) { // Skip first 2 patterns already handled above
+                        const matches = [...line.matchAll(pattern)];
+                        for (const match of matches) {
+                            if (match[1] && match[1].length >= 7) {
+                                receiptNumber = match[1];
+                                console.log(`Found receipt number: ${receiptNumber} using pattern: ${pattern}`);
+                                break;
+                            }
                         }
+                        if (receiptNumber) break;
                     }
                     if (receiptNumber) break;
                 }
 
-                // Search for weight
+                // Enhanced truck number patterns - more comprehensive for Indonesian plates
+                const truckPatterns = [
+                    // Standard Indonesian plate patterns
+                    /([A-Z]\s+\d{1,4}\s+[A-Z]{2,3})/gi, // "B 9125 PJA" (with spaces)
+                    /([A-Z]\d{1,4}\s+[A-Z]{2,3})/gi, // "B9125 PJA" (no space before number)
+                    /([A-Z]{1,2}\s*\d{1,4}\s*[A-Z]{1,3})/gi, // Flexible spacing
+                    
+                    // Patterns with context keywords
+                    /(?:no.*pol|nopol|nomor.*polisi|no.*truk|nomor.*truk)[\s.:]*([A-Z]{1,2}\s*\d{1,4}\s*[A-Z]{1,3})/gi,
+                    
+                    // More flexible patterns for OCR errors
+                    /([A-Z]\s*\d{3,4}\s*[A-Z]{2,3})/gi, // Allow for OCR spacing issues
+                    /([A-Z]{1,2}\d{3,4}[A-Z]{2,3})/gi, // No spaces at all
+                    
+                    // Pattern for when OCR reads as separate words
+                    /([A-Z])\s+(\d{3,4})\s+([A-Z]{2,3})/gi, // Separate capture groups
+                ];
+
+                // First pass - look for lines with truck number context
                 for (const line of lines) {
-                    for (const pattern of weightPatterns) {
-                        const match = line.match(pattern);
-                        if (match && match[1]) {
-                            const weightValue = parseFloat(match[1]);
-                            if (weightValue > 0 && weightValue < 100000) { // Reasonable weight range
-                                weight = match[1];
+                    const lowerLine = line.toLowerCase();
+                    console.log(`Processing line for truck: "${line}"`);
+                    
+                    // Check for context keywords first
+                    if (lowerLine.includes('nopol') || 
+                        lowerLine.includes('no pol') ||
+                        lowerLine.includes('nomor polisi') ||
+                        lowerLine.includes('no truk') ||
+                        lowerLine.includes('nomor truk') ||
+                        lowerLine.includes('polisi')) {
+                        console.log('Found truck context line:', line);
+                        
+                        // Try to extract truck number from this line
+                        for (const pattern of truckPatterns) {
+                            const match = line.match(pattern);
+                            if (match) {
+                                let foundTruck = '';
+                                
+                                // Handle different match groups
+                                if (match.length === 4 && match[1] && match[2] && match[3]) {
+                                    // Separate groups: "B", "9125", "PJA"
+                                    foundTruck = `${match[1]} ${match[2]} ${match[3]}`;
+                                } else if (match[1]) {
+                                    foundTruck = match[1].trim();
+                                }
+                                
+                                if (foundTruck) {
+                                    // Normalize the truck number format
+                                    foundTruck = foundTruck.replace(/([A-Z])(\d+)(\s+[A-Z]{2,3})/g, '$1 $2$3');
+                                    foundTruck = foundTruck.replace(/([A-Z]{1,2})(\d{3,4})([A-Z]{2,3})/g, '$1 $2 $3');
+                                    foundTruck = foundTruck.replace(/\s+/g, ' ').trim();
+                                    
+                                    // Validate format (should be like "B 9125 PJA")
+                                    if (foundTruck.match(/^[A-Z]{1,2}\s+\d{3,4}\s+[A-Z]{2,3}$/)) {
+                                        truckNumber = foundTruck;
+                                        console.log(`Found truck number: "${truckNumber}" using context pattern`);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (truckNumber) break;
+                    }
+                }
+                
+                // Second pass - look for any line that might contain truck number pattern
+                if (!truckNumber) {
+                    console.log('No truck number found in context lines, trying all lines...');
+                    for (const line of lines) {
+                        console.log(`Scanning line for truck pattern: "${line}"`);
+                        
+                        // Check if line contains potential truck number pattern
+                        if (line.match(/[A-Z]\s*\d+\s*[A-Z]{2,3}/i)) {
+                            console.log('Potential truck pattern found:', line);
+                            
+                            for (const pattern of truckPatterns) {
+                                const match = line.match(pattern);
+                                if (match) {
+                                    let foundTruck = '';
+                                    
+                                    if (match.length === 4 && match[1] && match[2] && match[3]) {
+                                        foundTruck = `${match[1]} ${match[2]} ${match[3]}`;
+                                    } else if (match[1]) {
+                                        foundTruck = match[1].trim();
+                                    }
+                                    
+                                    if (foundTruck) {
+                                        // Normalize format
+                                        foundTruck = foundTruck.replace(/([A-Z])(\d+)(\s+[A-Z]{2,3})/g, '$1 $2$3');
+                                        foundTruck = foundTruck.replace(/([A-Z]{1,2})(\d{3,4})([A-Z]{2,3})/g, '$1 $2 $3');
+                                        foundTruck = foundTruck.replace(/\s+/g, ' ').trim();
+                                        
+                                        // Validate format
+                                        if (foundTruck.match(/^[A-Z]{1,2}\s+\d{3,4}\s+[A-Z]{2,3}$/)) {
+                                            truckNumber = foundTruck;
+                                            console.log(`Found truck number: "${truckNumber}" using general pattern`);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (truckNumber) break;
+                        }
+                    }
+                }
+                
+                // Third pass - try to find truck number in any format and clean it up
+                if (!truckNumber) {
+                    console.log('Still no truck number, trying loose patterns...');
+                    for (const line of lines) {
+                        // Very loose pattern - any letter followed by numbers followed by letters
+                        const looseMatch = line.match(/([A-Z]{1,2})\s*(\d{3,4})\s*([A-Z]{2,3})/i);
+                        if (looseMatch && looseMatch[1] && looseMatch[2] && looseMatch[3]) {
+                            const candidate = `${looseMatch[1].toUpperCase()} ${looseMatch[2]} ${looseMatch[3].toUpperCase()}`;
+                            console.log(`Found potential truck number with loose pattern: "${candidate}"`);
+                            
+                            // Additional validation - check if it looks like Indonesian plate
+                            if (looseMatch[1].length <= 2 && 
+                                looseMatch[2].length >= 3 && looseMatch[2].length <= 4 &&
+                                looseMatch[3].length >= 2 && looseMatch[3].length <= 3) {
+                                truckNumber = candidate;
+                                console.log(`Accepted truck number: "${truckNumber}"`);
                                 break;
                             }
                         }
                     }
-                    if (weight) break;
+                }
+                
+                console.log('Truck detection results:', { truckNumber });
+                
+                console.log('Truck detection result:', truckNumber);
+
+                // Enhanced assignment patterns
+                const assignmentPatterns = [
+                    /(?:penugasan|assignment)[\s.:]*([A-Z\s]+?)(?:\n|$)/gi,
+                    /(JAKARTA\s+\w+)/gi, // Specific pattern for Jakarta areas
+                    /(BANDUNG|SURABAYA|MEDAN|SEMARANG|PALEMBANG|MAKASSAR)[\s\w]*/gi,
+                ];
+
+                for (const line of lines) {
+                    console.log(`Processing line for assignment: "${line}"`);
+                    
+                    // Special check for the exact format from OCR
+                    if (line.toLowerCase().includes('penugasan')) {
+                        console.log('Found penugasan line:', line);
+                        
+                        // Extract everything after "Penugasan :" 
+                        const assignmentMatch = line.match(/penugasan\s*:\s*(.+)/i);
+                        if (assignmentMatch && assignmentMatch[1]) {
+                            assignment = assignmentMatch[1].trim();
+                            console.log(`Found assignment: ${assignment}`);
+                            break;
+                        }
+                    }
+                    
+                    // Check if line contains JAKARTA BARAT specifically
+                    if (line.toUpperCase().includes('JAKARTA') && line.toUpperCase().includes('BARAT')) {
+                        assignment = 'JAKARTA BARAT';
+                        console.log(`Found assignment: ${assignment} from Jakarta Barat line`);
+                        break;
+                    }
+                    
+                    for (const pattern of assignmentPatterns) {
+                        const match = line.match(pattern);
+                        if (match && match[1]) {
+                            assignment = match[1].trim();
+                            console.log(`Found assignment: ${assignment} using pattern: ${pattern}`);
+                            break;
+                        }
+                    }
+                    if (assignment) break;
+                }
+                
+                console.log('Assignment detection result:', assignment);
+
+                // Enhanced time patterns
+                const timePatterns = [
+                    /(\d{1,2}\s+\w{3}\s+\d{4},\s*\d{1,2}:\d{2}:\d{2})/gi, // 04 Aug 2025, 08:13:51
+                    /(\d{1,2}\s+\w{3}\s+\d{4}\s+\d{1,2}:\d{2}:\d{2})/gi, // 04 Aug 2025 08:13:51
+                    /(\d{1,2}\/\d{1,2}\/\d{4}\s+\d{1,2}:\d{2}:\d{2})/gi, // 04/08/2025 08:13:51
+                    /(\d{1,2}-\d{1,2}-\d{4}\s+\d{1,2}:\d{2}:\d{2})/gi, // 04-08-2025 08:13:51
+                ];
+
+                for (const line of lines) {
+                    console.log(`Processing line for time: "${line}"`);
+                    
+                    // Entry time - look for "Masuk :" pattern
+                    if (line.toLowerCase().includes('masuk') && line.includes(':')) {
+                        console.log('Found masuk line:', line);
+                        for (const pattern of timePatterns) {
+                            const match = line.match(pattern);
+                            if (match && match[1]) {
+                                entryTime = match[1].trim();
+                                console.log(`Found entry time: ${entryTime}`);
+                                break;
+                            }
+                        }
+                        // Also try to extract after "Masuk : "
+                        const masukMatch = line.match(/masuk\s*:\s*(.+)/i);
+                        if (masukMatch && masukMatch[1] && !entryTime) {
+                            entryTime = masukMatch[1].trim();
+                            console.log(`Found entry time via masuk pattern: ${entryTime}`);
+                        }
+                    }
+                    
+                    // Exit time - look for "Keluar :" pattern  
+                    if (line.toLowerCase().includes('keluar') && line.includes(':')) {
+                        console.log('Found keluar line:', line);
+                        for (const pattern of timePatterns) {
+                            const match = line.match(pattern);
+                            if (match && match[1]) {
+                                exitTime = match[1].trim();
+                                console.log(`Found exit time: ${exitTime}`);
+                                break;
+                            }
+                        }
+                        // Also try to extract after "Keluar : "
+                        const keluarMatch = line.match(/keluar\s*:\s*(.+)/i);
+                        if (keluarMatch && keluarMatch[1] && !exitTime) {
+                            exitTime = keluarMatch[1].trim();
+                            console.log(`Found exit time via keluar pattern: ${exitTime}`);
+                        }
+                    }
+                }
+                
+                console.log('Time detection results:', { entryTime, exitTime });
+
+                // Enhanced weight patterns - more specific for Indonesian receipts
+                const weightPatterns = [
+                    /berat\s+masuk\s*:\s*(\d+)\s*kg/gi, // Berat Masuk : 23280 kg
+                    /berat\s+keluar\s*:\s*(\d+)\s*kg/gi, // Berat Keluar : 13540 kg
+                    /berat\s+nett?\s*:\s*(\d+)\s*kg/gi, // Berat Nett : 9740 kg
+                    /:\s*(\d{3,6})\s*kg/gi, // : 23280 kg
+                    /(\d{3,6})\s*kg/gi, // 23280 kg
+                    /:\s*(\d{3,6})/g, // : 23280
+                ];
+
+                for (const line of lines) {
+                    const lowerLine = line.toLowerCase();
+                    console.log(`Processing line for weight: "${line}"`);
+                    
+                    // Berat Masuk - look for exact pattern "Berat Masuk : 23280 kg"
+                    if (lowerLine.includes('berat masuk')) {
+                        console.log('Found berat masuk line:', line);
+                        
+                        // Try specific pattern first
+                        const specificMatch = line.match(/berat\s+masuk\s*:\s*(\d+)\s*kg/gi);
+                        if (specificMatch) {
+                            const numbers = specificMatch[0].match(/(\d+)/);
+                            if (numbers && numbers[1]) {
+                                weightIn = numbers[1];
+                                console.log(`Found weight in via specific pattern: ${weightIn} kg`);
+                            }
+                        } else {
+                            // Try general patterns
+                            for (const pattern of weightPatterns) {
+                                const match = line.match(pattern);
+                                if (match && match[1] && parseInt(match[1]) > 1000) {
+                                    weightIn = match[1];
+                                    console.log(`Found weight in via general pattern: ${weightIn} kg`);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Berat Keluar - look for exact pattern "Berat Keluar : 13540 kg"
+                    if (lowerLine.includes('berat keluar')) {
+                        console.log('Found berat keluar line:', line);
+                        
+                        // Try specific pattern first
+                        const specificMatch = line.match(/berat\s+keluar\s*:\s*(\d+)\s*kg/gi);
+                        if (specificMatch) {
+                            const numbers = specificMatch[0].match(/(\d+)/);
+                            if (numbers && numbers[1]) {
+                                weightOut = numbers[1];
+                                console.log(`Found weight out via specific pattern: ${weightOut} kg`);
+                            }
+                        } else {
+                            // Try general patterns
+                            for (const pattern of weightPatterns) {
+                                const match = line.match(pattern);
+                                if (match && match[1] && parseInt(match[1]) > 1000) {
+                                    weightOut = match[1];
+                                    console.log(`Found weight out via general pattern: ${weightOut} kg`);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Berat Nett - look for exact pattern "Berat Nett : 9740 kg"
+                    if ((lowerLine.includes('berat nett') || lowerLine.includes('berat net'))) {
+                        console.log('Found berat nett line:', line);
+                        
+                        // Try specific pattern first
+                        const specificMatch = line.match(/berat\s+nett?\s*:\s*(\d+)\s*kg/gi);
+                        if (specificMatch) {
+                            const numbers = specificMatch[0].match(/(\d+)/);
+                            if (numbers && numbers[1]) {
+                                weightNett = numbers[1];
+                                console.log(`Found weight nett via specific pattern: ${weightNett} kg`);
+                            }
+                        } else {
+                            // Try general patterns
+                            for (const pattern of weightPatterns) {
+                                const match = line.match(pattern);
+                                if (match && match[1] && parseInt(match[1]) > 100) {
+                                    weightNett = match[1];
+                                    console.log(`Found weight nett via general pattern: ${weightNett} kg`);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
 
-                // If we found either piece of data, show results
-                if (receiptNumber || weight) {
-                    this.detectedData.receiptNumber = receiptNumber;
-                    this.detectedData.weight = weight;
-                    this.showOcrResult();
+                console.log('Weight detection results:', { weightIn, weightOut, weightNett });
+
+                console.log('Final Detected Data before assignment:', {
+                    receiptNumber, truckNumber, assignment, entryTime, exitTime, 
+                    weightIn, weightOut, weightNett
+                }); // Debug log
+
+                // Update detected data with explicit logging
+                this.detectedData = {
+                    receiptNumber: receiptNumber || '',
+                    truckNumber: truckNumber || '',
+                    assignment: assignment || '',
+                    entryTime: entryTime || '',
+                    exitTime: exitTime || '',
+                    weightIn: weightIn || '',
+                    weightOut: weightOut || '',
+                    weightNett: weightNett || ''
+                };
+
+                console.log('Final Detected Data after assignment:', this.detectedData);
+
+                // If we found any data, apply directly to form
+                if (receiptNumber || truckNumber || assignment || weightNett) {
+                    console.log('Data found, applying directly to form');
+                    this.applyDetectedDataDirectly();
                     this.playSuccessSound();
                     this.vibrate();
                     
-                    // Auto-stop scanning after successful detection
+                    // Show success message
+                    this.showScanSuccess();
+                    
+                    // Scroll to form to show filled data
                     setTimeout(() => {
-                        this.stopScanner();
-                    }, 1000);
+                        const formSection = document.querySelector('form');
+                        if (formSection) {
+                            formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 500);
+                } else {
+                    console.log('No significant data found in OCR text');
                 }
             }
 
-            showOcrResult() {
-                this.detectedReceiptSpan.textContent = this.detectedData.receiptNumber || 'Tidak terdeteksi';
-                this.detectedWeightSpan.textContent = this.detectedData.weight || 'Tidak terdeteksi';
-                this.ocrResult.classList.remove('hidden');
+            applyDetectedDataDirectly() {
+                console.log('=== APPLYING DATA DIRECTLY TO FORM ===');
+                console.log('Data to apply:', this.detectedData);
+                
+                // Get input elements by ID directly
+                const nomorStrukInput = document.getElementById('NomorStruk');
+                const nomorPolisiInput = document.getElementById('NomorPolisi');
+                const penugasanInput = document.getElementById('Penugasan');
+                const waktuMasukInput = document.getElementById('WaktuMasuk');
+                const waktuKeluarInput = document.getElementById('WaktuKeluar');
+                const beratMasukInput = document.getElementById('BeratMasuk');
+                const beratKeluarInput = document.getElementById('BeratKeluar');
+                const beratNettInput = document.getElementById('BeratNett');
+
+                let fieldsUpdated = 0;
+
+                // Apply Receipt Number
+                if (this.detectedData.receiptNumber && nomorStrukInput) {
+                    console.log('Setting receipt number:', this.detectedData.receiptNumber);
+                    nomorStrukInput.value = this.detectedData.receiptNumber;
+                    nomorStrukInput.classList.add('auto-filled');
+                    nomorStrukInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => nomorStrukInput.classList.remove('auto-filled'), 3000);
+                    fieldsUpdated++;
+                }
+                
+                // Apply Truck Number
+                if (this.detectedData.truckNumber && nomorPolisiInput) {
+                    console.log('Setting truck number:', this.detectedData.truckNumber);
+                    nomorPolisiInput.value = this.detectedData.truckNumber;
+                    nomorPolisiInput.classList.add('auto-filled');
+                    nomorPolisiInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => nomorPolisiInput.classList.remove('auto-filled'), 3000);
+                    fieldsUpdated++;
+                }
+                
+                // Apply Assignment
+                if (this.detectedData.assignment && penugasanInput) {
+                    console.log('Setting assignment:', this.detectedData.assignment);
+                    penugasanInput.value = this.detectedData.assignment;
+                    penugasanInput.classList.add('auto-filled');
+                    penugasanInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => penugasanInput.classList.remove('auto-filled'), 3000);
+                    fieldsUpdated++;
+                }
+                
+                // Apply Entry Time
+                if (this.detectedData.entryTime && waktuMasukInput) {
+                    console.log('Setting entry time:', this.detectedData.entryTime);
+                    waktuMasukInput.value = this.detectedData.entryTime;
+                    waktuMasukInput.classList.add('auto-filled');
+                    waktuMasukInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => waktuMasukInput.classList.remove('auto-filled'), 3000);
+                    fieldsUpdated++;
+                }
+                
+                // Apply Exit Time
+                if (this.detectedData.exitTime && waktuKeluarInput) {
+                    console.log('Setting exit time:', this.detectedData.exitTime);
+                    waktuKeluarInput.value = this.detectedData.exitTime;
+                    waktuKeluarInput.classList.add('auto-filled');
+                    waktuKeluarInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => waktuKeluarInput.classList.remove('auto-filled'), 3000);
+                    fieldsUpdated++;
+                }
+                
+                // Apply Weight In
+                if (this.detectedData.weightIn && beratMasukInput) {
+                    console.log('Setting weight in:', this.detectedData.weightIn);
+                    beratMasukInput.value = this.detectedData.weightIn;
+                    beratMasukInput.classList.add('auto-filled');
+                    beratMasukInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => beratMasukInput.classList.remove('auto-filled'), 3000);
+                    fieldsUpdated++;
+                }
+                
+                // Apply Weight Out  
+                if (this.detectedData.weightOut && beratKeluarInput) {
+                    console.log('Setting weight out:', this.detectedData.weightOut);
+                    beratKeluarInput.value = this.detectedData.weightOut;
+                    beratKeluarInput.classList.add('auto-filled');
+                    beratKeluarInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => beratKeluarInput.classList.remove('auto-filled'), 3000);
+                    fieldsUpdated++;
+                }
+                
+                // Apply Weight Nett
+                if (this.detectedData.weightNett && beratNettInput) {
+                    console.log('Setting weight nett:', this.detectedData.weightNett);
+                    beratNettInput.value = this.detectedData.weightNett;
+                    beratNettInput.classList.add('auto-filled');
+                    beratNettInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => beratNettInput.classList.remove('auto-filled'), 3000);
+                    fieldsUpdated++;
+                }
+
+                console.log(`=== DIRECT APPLY COMPLETED: ${fieldsUpdated} fields updated ===`);
+                return fieldsUpdated;
             }
 
             applyDetectedData() {
-                if (this.detectedData.receiptNumber) {
+                console.log('=== APPLY DETECTED DATA CALLED ===');
+                console.log('ApplyDetectedData called with:', this.detectedData);
+                
+                // Get input elements by ID directly
+                const nomorStrukInput = document.getElementById('NomorStruk');
+                const nomorPolisiInput = document.getElementById('NomorPolisi');
+                const penugasanInput = document.getElementById('Penugasan');
+                const waktuMasukInput = document.getElementById('WaktuMasuk');
+                const waktuKeluarInput = document.getElementById('WaktuKeluar');
+                const beratMasukInput = document.getElementById('BeratMasuk');
+                const beratKeluarInput = document.getElementById('BeratKeluar');
+                const beratNettInput = document.getElementById('BeratNett');
+
+                console.log('Input elements found:', {
+                    nomorStrukInput: !!nomorStrukInput,
+                    nomorPolisiInput: !!nomorPolisiInput,
+                    penugasanInput: !!penugasanInput,
+                    waktuMasukInput: !!waktuMasukInput,
+                    waktuKeluarInput: !!waktuKeluarInput,
+                    beratMasukInput: !!beratMasukInput,
+                    beratKeluarInput: !!beratKeluarInput,
+                    beratNettInput: !!beratNettInput
+                });
+
+                // Debug: Check if elements exist and are visible
+                if (nomorStrukInput) {
+                    console.log('NomorStruk element properties:', {
+                        id: nomorStrukInput.id,
+                        type: nomorStrukInput.type,
+                        disabled: nomorStrukInput.disabled,
+                        readonly: nomorStrukInput.readOnly,
+                        currentValue: nomorStrukInput.value
+                    });
+                }
+
+                let fieldsUpdated = 0;
+
+                // Apply Receipt Number
+                if (this.detectedData.receiptNumber && nomorStrukInput) {
+                    console.log('Setting receipt number:', this.detectedData.receiptNumber);
                     nomorStrukInput.value = this.detectedData.receiptNumber;
                     nomorStrukInput.classList.add('auto-filled');
+                    // Trigger input event to ensure any validation runs
+                    nomorStrukInput.dispatchEvent(new Event('input', { bubbles: true }));
                     setTimeout(() => nomorStrukInput.classList.remove('auto-filled'), 2000);
+                    fieldsUpdated++;
+                    console.log('Receipt number field updated. New value:', nomorStrukInput.value);
                 }
-                if (this.detectedData.weight) {
-                    beratMuatanInput.value = this.detectedData.weight;
-                    beratMuatanInput.classList.add('auto-filled');
-                    setTimeout(() => beratMuatanInput.classList.remove('auto-filled'), 2000);
-                }
-                this.hideMessages();
                 
-                // Show success message
-                this.showSuccess('Data dari scan telah diisi ke form!');
+                // Apply Truck Number
+                if (this.detectedData.truckNumber && nomorPolisiInput) {
+                    console.log('Setting truck number:', this.detectedData.truckNumber);
+                    nomorPolisiInput.value = this.detectedData.truckNumber;
+                    nomorPolisiInput.classList.add('auto-filled');
+                    nomorPolisiInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => nomorPolisiInput.classList.remove('auto-filled'), 2000);
+                    fieldsUpdated++;
+                    console.log('Truck number field updated. New value:', nomorPolisiInput.value);
+                } else {
+                    console.log('Truck number not applied. Data:', this.detectedData.truckNumber, 'Input exists:', !!nomorPolisiInput);
+                }
+                
+                // Apply Assignment
+                if (this.detectedData.assignment && penugasanInput) {
+                    console.log('Setting assignment:', this.detectedData.assignment);
+                    penugasanInput.value = this.detectedData.assignment;
+                    penugasanInput.classList.add('auto-filled');
+                    penugasanInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => penugasanInput.classList.remove('auto-filled'), 2000);
+                    fieldsUpdated++;
+                    console.log('Assignment field updated. New value:', penugasanInput.value);
+                }
+                
+                // Apply Entry Time
+                if (this.detectedData.entryTime && waktuMasukInput) {
+                    console.log('Setting entry time:', this.detectedData.entryTime);
+                    waktuMasukInput.value = this.detectedData.entryTime;
+                    waktuMasukInput.classList.add('auto-filled');
+                    waktuMasukInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => waktuMasukInput.classList.remove('auto-filled'), 2000);
+                    fieldsUpdated++;
+                    console.log('Entry time field updated. New value:', waktuMasukInput.value);
+                }
+                
+                // Apply Exit Time
+                if (this.detectedData.exitTime && waktuKeluarInput) {
+                    console.log('Setting exit time:', this.detectedData.exitTime);
+                    waktuKeluarInput.value = this.detectedData.exitTime;
+                    waktuKeluarInput.classList.add('auto-filled');
+                    waktuKeluarInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => waktuKeluarInput.classList.remove('auto-filled'), 2000);
+                    fieldsUpdated++;
+                    console.log('Exit time field updated. New value:', waktuKeluarInput.value);
+                }
+                
+                // Apply Weight In
+                if (this.detectedData.weightIn && beratMasukInput) {
+                    console.log('Setting weight in:', this.detectedData.weightIn);
+                    beratMasukInput.value = this.detectedData.weightIn;
+                    beratMasukInput.classList.add('auto-filled');
+                    beratMasukInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => beratMasukInput.classList.remove('auto-filled'), 2000);
+                    fieldsUpdated++;
+                    console.log('Weight in field updated. New value:', beratMasukInput.value);
+                }
+                
+                // Apply Weight Out  
+                if (this.detectedData.weightOut && beratKeluarInput) {
+                    console.log('Setting weight out:', this.detectedData.weightOut);
+                    beratKeluarInput.value = this.detectedData.weightOut;
+                    beratKeluarInput.classList.add('auto-filled');
+                    beratKeluarInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => beratKeluarInput.classList.remove('auto-filled'), 2000);
+                    fieldsUpdated++;
+                    console.log('Weight out field updated. New value:', beratKeluarInput.value);
+                }
+                
+                // Apply Weight Nett
+                if (this.detectedData.weightNett && beratNettInput) {
+                    console.log('Setting weight nett:', this.detectedData.weightNett);
+                    beratNettInput.value = this.detectedData.weightNett;
+                    beratNettInput.classList.add('auto-filled');
+                    beratNettInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(() => beratNettInput.classList.remove('auto-filled'), 2000);
+                    fieldsUpdated++;
+                    console.log('Weight nett field updated. New value:', beratNettInput.value);
+                }
+
+                console.log(`=== APPLY COMPLETED: ${fieldsUpdated} fields updated ===`);
+                
+                // Hide OCR result after applying data
+                this.hideOcrResult();
+                
+                // Show success message and scroll to form
+                this.showSuccess(`Data dari scan telah diisi ke ${fieldsUpdated} field!`);
+                
+                // Scroll to form section to show the filled data
+                const formSection = document.querySelector('form');
+                if (formSection) {
+                    formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
 
-            async retryOcr() {
-                this.hideMessages();
-                this.detectedData = { receiptNumber: '', weight: '' };
+            // Removed unused functions - auto-fill is now automatic
+
+            async handleFileUpload(event) {
+                console.log('=== FILE UPLOAD TRIGGERED ===');
+                console.log('Event:', event);
+                console.log('Event target:', event.target);
+                console.log('Files:', event.target.files);
                 
-                if (this.isScanning) {
-                    await this.stopScanner();
+                const file = event.target.files[0];
+                console.log('Selected file:', file);
+                
+                if (!file) {
+                    console.log('No file selected');
+                    return;
                 }
-                
-                setTimeout(() => {
-                    this.startScanner();
-                }, 500);
+
+                console.log('File details:', {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    lastModified: file.lastModified
+                });
+
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    console.error('Invalid file type:', file.type);
+                    this.showError('Harap pilih file gambar (JPG, PNG, etc.)');
+                    event.target.value = ''; // Reset input
+                    return;
+                }
+
+                // Validate file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    console.error('File too large:', file.size);
+                    this.showError('Ukuran file terlalu besar. Maksimal 10MB.');
+                    event.target.value = ''; // Reset input
+                    return;
+                }
+
+                try {
+                    console.log('Starting file processing...');
+                    this.hideMessages();
+                    this.showOcrProcessing();
+
+                    // Stop any active scanning first
+                    if (this.isScanning) {
+                        await this.stopScanner();
+                    }
+
+                    // Show uploaded image in scanner container
+                    console.log('Displaying uploaded image...');
+                    this.displayUploadedImage(file);
+
+                    // Process with OCR
+                    console.log('Starting OCR processing...');
+                    await this.processImageWithOCR(file);
+
+                } catch (error) {
+                    console.error('Upload processing error:', error);
+                    this.hideOcrProcessing();
+                    this.showError('Gagal memproses gambar yang diupload.');
+                } finally {
+                    // Reset file input for next upload
+                    event.target.value = '';
+                }
+            }
+
+            displayUploadedImage(file) {
+                console.log('Displaying uploaded image...');
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    console.log('FileReader loaded, creating image element...');
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-full object-contain rounded-lg';
+                    img.style.backgroundColor = '#f3f4f6';
+                    img.style.maxHeight = '300px';
+                    
+                    // Add loading indicator
+                    img.onload = () => {
+                        console.log('Image loaded successfully in container');
+                    };
+                    
+                    img.onerror = () => {
+                        console.error('Error loading image in container');
+                        this.showError('Gagal menampilkan gambar yang diupload.');
+                    };
+                    
+                    this.scannerContainer.innerHTML = '';
+                    this.scannerContainer.appendChild(img);
+                    console.log('Image added to scanner container');
+                };
+                reader.onerror = () => {
+                    console.error('FileReader error');
+                    this.showError('Gagal membaca file gambar.');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            async processImageWithOCR(imageInput) {
+                try {
+                    this.showOcrProcessing();
+
+                    // Enhanced OCR configuration for better Indonesian text recognition
+                    const { data: { text } } = await Tesseract.recognize(
+                        imageInput,
+                        'ind+eng',
+                        {
+                            logger: m => {
+                                // Show OCR progress
+                                if (m.status === 'recognizing text') {
+                                    console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+                                }
+                            },
+                            tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+                            tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz :.,/-_()kg',
+                        }
+                    );
+
+                    await this.extractDataFromText(text);
+                    this.hideOcrProcessing();
+
+                } catch (error) {
+                    console.error('OCR Error:', error);
+                    this.hideOcrProcessing();
+                    this.showError('Gagal membaca teks dari gambar. Coba dengan pencahayaan yang lebih baik.');
+                }
             }
 
             async stopScanner() {
@@ -478,7 +1414,18 @@
                 this.startBtn.classList.remove('hidden');
                 this.stopBtn.classList.add('hidden');
                 this.hideLoading();
-                this.hideMessages();
+                
+                // DON'T hide OCR results when stopping scanner
+                // Only hide permission and processing messages
+                this.permissionInfo.classList.add('hidden');
+                this.permissionDenied.classList.add('hidden');
+                this.ocrProcessing.classList.add('hidden');
+                // Keep this.ocrResult visible if it contains data
+                
+                // Reset file upload
+                if (this.fileUpload) {
+                    this.fileUpload.value = '';
+                }
                 
                 // Reset scanner container
                 this.scannerContainer.innerHTML = `
@@ -525,7 +1472,15 @@
                 this.permissionInfo.classList.add('hidden');
                 this.permissionDenied.classList.add('hidden');
                 this.ocrProcessing.classList.add('hidden');
-                this.ocrResult.classList.add('hidden');
+                this.scanSuccess.classList.add('hidden');
+            }
+            
+            showScanSuccess() {
+                this.scanSuccess.classList.remove('hidden');
+                // Auto-hide after 3 seconds
+                setTimeout(() => {
+                    this.scanSuccess.classList.add('hidden');
+                }, 3000);
             }
 
             showError(message) {
@@ -592,7 +1547,20 @@
         }
 
         // Initialize the receipt scanner
-        new ReceiptScanner();
+        const scanner = new ReceiptScanner();
+        
+        // Additional fallback for file upload if not bound during initialization
+        setTimeout(() => {
+            const fileUploadFallback = document.getElementById('file-upload');
+            if (fileUploadFallback && !fileUploadFallback.hasAttribute('data-bound')) {
+                console.log('Setting up fallback file upload listener...');
+                fileUploadFallback.addEventListener('change', (e) => {
+                    console.log('Fallback file upload triggered!');
+                    scanner.handleFileUpload(e);
+                });
+                fileUploadFallback.setAttribute('data-bound', 'true');
+            }
+        }, 1000);
     });
 </script>
 </register-block>

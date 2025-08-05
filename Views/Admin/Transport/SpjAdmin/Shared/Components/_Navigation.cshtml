@@ -1,0 +1,48 @@
+<div class="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm z-99">
+            <div class="relative backdrop-blur-lg border border-gray-200/50 rounded-t-3xl shadow-xl overflow-hidden">
+                <div class="absolute -top-0 left-1/2 transform -translate-x-1/2 w-20 h-10">
+                    <div class="w-full h-full bg-transparent relative">
+                        <div class="absolute left-0 top-0 w-10 h-10 backdrop-blur-lg rounded-br-full"></div>
+                        <div class="absolute right-0 top-0 w-10 h-10 backdrop-blur-lg rounded-bl-full"></div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Content -->
+                <div class="flex justify-between items-center px-8 relative pt-6">
+                    <!-- Home Button -->
+                    <a href="@Url.Action("Index", "Admin")" class="flex flex-col items-center gap-1 px-4 py-2 transition-all duration-300 hover:scale-105 group">
+                        <div class="relative">
+                            <i class="w-6 h-6 text-gray-400 group-hover:text-orange-500 transition-colors duration-300" data-lucide="home"></i>
+                            <div class="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></div>
+                        </div>
+                        <span class="text-xs text-gray-600 group-hover:text-orange-500 font-medium transition-colors duration-300">Home</span>
+                    </a>
+                    
+                    <div class="w-12"></div>
+                    
+                    <!-- Profile Button -->
+
+                    <a href="@Url.Action("History", "Admin")" class="flex flex-col items-center gap-1 px-4 py-2 transition-all duration-300 hover:scale-105 group">
+                        <div class="relative">
+                            <i class="w-6 h-6 text-gray-400 group-hover:text-orange-500 transition-colors duration-300" data-lucide="clipboard-check"></i>
+                            <div class="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-orange-500 group-hover:w-full transition-all duration-300"></div>
+                        </div>
+                        <span class="text-xs text-gray-600 group-hover:text-orange-500 font-medium transition-colors duration-300">History</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Center Submit -->
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <a href="@Url.Action("Scan", "Admin")" id="odoBtn" class="hover:cursor-pointer w-14 h-14 bg-gradient-to-br from-orange-500 via-orange-400 to-orange-600 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:rotate-6 border-4 border-white ring-2 ring-orange-200">
+                    <i class="w-6 h-6 text-white" data-lucide="camera"></i>
+                </a>
+            </div>
+        </div>
+
+<div class="h-30"></div>
+
+
+<register-block dynamic-section="scripts" key="jsNav">
+   
+</register-block>
