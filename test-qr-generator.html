@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Generator - Test SPJ</title>
+    <!-- Primary QR Code library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- Backup QR Code library -->
+    <script>
+      // Load backup if primary fails
+      window.addEventListener("load", function () {
+        if (typeof QRCode === "undefined") {
+          console.log("Loading backup QR library...");
+          const script = document.createElement("script");
+          script.src = "https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js";
+          script.onload = function () {
+            console.log("Backup QR library loaded");
+            if (typeof generateQR === "function") {
+              generateQR();
+            }
+          };
+          script.onerror = function () {
+            console.log("Backup QR library also failed, using online service");
+          };
+          document.head.appendChild(script);
+        }
+      });
+    </script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      button {
+        background: #f59e0b;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 10px;
+      }
+      button:hover {
+        background: #d97706;
+      }
+      #qrcode {
+        text-align: center;
+        margin: 20px 0;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 5px;
+      }
+      .sample-codes {
+        background: #e5f3ff;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+      .sample-codes h3 {
+        margin-top: 0;
+        color: #1e40af;
+      }
+      .code-button {
+        background: #3b82f6;
+        margin: 5px;
+        padding: 5px 10px;
+        font-size: 14px;
+      }
+      .code-button:hover {
+        background: #2563eb;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔍 QR Code Generator - Test SPJ Scanner</h1>
+      <p>Generator ini untuk membuat QR Code testing scanner SPJ Anda.</p>
+
+      <div class="sample-codes">
+        <h3>📝 Kode SPJ Contoh</h3>
+        <p>Klik untuk generate QR Code:</p>
+        <button class="code-button" onclick="generateSample('SPJ001')">
+          SPJ001
+        </button>
+        <button class="code-button" onclick="generateSample('SPJ002')">
+          SPJ002
+        </button>
+        <button class="code-button" onclick="generateSample('TEST123')">
+          TEST123
+        </button>
+        <button class="code-button" onclick="generateSample('12345')">
+          12345
+        </button>
+        <button class="code-button" onclick="generateSample('ABCDEF')">
+          ABCDEF
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label for="spjCode">Masukkan Kode SPJ Custom:</label>
+        <input
+          type="text"
+          id="spjCode"
+          placeholder="Contoh: SPJ001, TEST123, dll..."
+          value="SPJ001"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="qrSize">Ukuran QR Code:</label>
+        <select id="qrSize">
+          <option value="200">Kecil (200px)</option>
+          <option value="300" selected>Sedang (300px)</option>
+          <option value="400">Besar (400px)</option>
+        </select>
+      </div>
+
+      <button onclick="generateQR()">🔗 Generate QR Code</button>
+      <button
+        onclick="generateQRFallback(document.getElementById('spjCode').value, parseInt(document.getElementById('qrSize').value))"
+      >
+        🌐 Use Online QR
+      </button>
+      <button
+        onclick="downloadQR()"
+        id="downloadBtn"
+        style="display: none; background: #10b981"
+      >
+        📥 Download QR
+      </button>
+      <button
+        onclick="clearQR()"
+        id="clearBtn"
+        style="display: none; background: #ef4444"
+      >
+        🗑️ Clear
+      </button>
+
+      <div id="qrcode"></div>
+      <div id="qrInfo"></div>
+    </div>
+
+    <script>
+      let currentQRData = "";
+
+      function generateSample(code) {
+        document.getElementById("spjCode").value = code;
+        generateQR();
+      }
+
+      function generateQR() {
+        const code = document.getElementById("spjCode").value.trim();
+        const size = parseInt(document.getElementById("qrSize").value);
+
+        if (!code) {
+          alert("Masukkan kode SPJ terlebih dahulu!");
+          return;
+        }
+
+        console.log("Generating QR for:", code); // Debug log
+
+        // Clear previous QR
+        document.getElementById("qrcode").innerHTML = "";
+        document.getElementById("qrInfo").innerHTML = "Generating...";
+
+        // Check if QRCode library is loaded
+        if (typeof QRCode === "undefined") {
+          console.log("QRCode library not available, using fallback");
+          generateQRFallback(code, size);
+          return;
+        }
+
+        // Create canvas element
+        const canvas = document.createElement("canvas");
+        document.getElementById("qrcode").appendChild(canvas);
+
+        // Generate QR Code with timeout
+        try {
+          QRCode.toCanvas(
+            canvas,
+            code,
+            {
+              width: size,
+              height: size,
+              margin: 2,
+              color: {
+                dark: "#000000",
+                light: "#FFFFFF",
+              },
+            },
+            function (error) {
+              if (error) {
+                console.error("QR Generation Error:", error);
+                console.log("Falling back to online QR service");
+                generateQRFallback(code, size);
+                return;
+              }
+
+              console.log("QR Generated successfully"); // Debug log
+
+              document.getElementById("qrInfo").innerHTML = `
+                <div style="text-align:center; margin-top:15px; padding:10px; background:#f0f9ff; border-radius:5px;">
+                    <strong>✅ QR Code Generated!</strong><br>
+                    <span style="font-family:monospace; background:#e5e7eb; padding:2px 6px; border-radius:3px;">${code}</span><br>
+                    <small style="color:#6b7280;">Ukuran: ${size}x${size}px</small>
+                </div>
+              `;
+
+              currentQRData = code;
+              document.getElementById("downloadBtn").style.display =
+                "inline-block";
+              document.getElementById("clearBtn").style.display =
+                "inline-block";
+            }
+          );
+        } catch (err) {
+          console.error("Exception in QR generation:", err);
+          generateQRFallback(code, size);
+        }
+      }
+
+      function downloadQR() {
+        if (!currentQRData) return;
+
+        const canvas = document.querySelector("#qrcode canvas");
+        if (canvas) {
+          const link = document.createElement("a");
+          link.download = `qr-spj-${currentQRData}.png`;
+          link.href = canvas.toDataURL();
+          link.click();
+        }
+      }
+
+      function clearQR() {
+        document.getElementById("qrcode").innerHTML = "";
+        document.getElementById("qrInfo").innerHTML = "";
+        document.getElementById("downloadBtn").style.display = "none";
+        document.getElementById("clearBtn").style.display = "none";
+        currentQRData = "";
+      }
+
+      // Auto generate on page load
+      window.onload = function () {
+        console.log("Page loaded");
+
+        // Check if QRCode library is loaded
+        if (typeof QRCode === "undefined") {
+          console.error("QRCode library not loaded");
+          document.getElementById("qrInfo").innerHTML = `
+            <div style="text-align:center; margin-top:15px; padding:10px; background:#fee2e2; border-radius:5px; color:#dc2626;">
+                <strong>❌ QR Code library tidak dimuat</strong><br>
+                <small>Periksa koneksi internet dan refresh halaman</small>
+            </div>
+          `;
+          return;
+        }
+
+        console.log("QRCode library loaded successfully");
+        generateQR();
+      };
+
+      // Fallback method using different QR library if first one fails
+      function generateQRFallback(code, size) {
+        console.log("Using fallback QR generation");
+        const qrCodeDiv = document.getElementById("qrcode");
+
+        // Use online QR service as fallback
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(
+          code
+        )}`;
+
+        qrCodeDiv.innerHTML = `
+          <img src="${qrUrl}" alt="QR Code for ${code}" style="max-width:100%; border:1px solid #ddd; border-radius:5px;">
+        `;
+
+        document.getElementById("qrInfo").innerHTML = `
+          <div style="text-align:center; margin-top:15px; padding:10px; background:#f0f9ff; border-radius:5px;">
+              <strong>✅ QR Code Generated (Fallback)!</strong><br>
+              <span style="font-family:monospace; background:#e5e7eb; padding:2px 6px; border-radius:3px;">${code}</span><br>
+              <small style="color:#6b7280;">Ukuran: ${size}x${size}px</small>
+          </div>
+        `;
+
+        currentQRData = code;
+        document.getElementById("downloadBtn").style.display = "none"; // Disable download for fallback
+        document.getElementById("clearBtn").style.display = "inline-block";
+      }
+    </script>
+  </body>
+</html>
