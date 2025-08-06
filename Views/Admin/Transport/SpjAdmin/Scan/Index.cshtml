@@ -448,18 +448,30 @@
                     
                     if (isValid) {
                         console.log(`✅ Kode ${code} VALID - menampilkan success`);
-                        this.showModal('success', 'Scan Berhasil!', 
-                            `SPJ "${code}" berhasil ditemukan dan diproses.\n\n📋 Detail SPJ:\n• Kode: ${code}\n• Status: Aktif\n• Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 
-                            true);
+                        
+                        // Format tanggal Indonesia
+                        const now = new Date();
+                        const tanggal = now.toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        const waktu = now.toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        
+                        // Custom modal untuk success dengan HTML yang lebih rapi
+                        this.showSuccessModal(code, tanggal, waktu);
+                        
                         setTimeout(() => {
                             this.hideResult();
                             this.manualInput.value = '';
                         }, 3000);
                     } else {
                         console.log(`❌ Kode ${code} TIDAK VALID - menampilkan error`);
-                        this.showModal('error', 'SPJ Tidak Ditemukan', 
-                            `Kode SPJ "${code}" tidak ditemukan dalam database.\n\n✅ Kode Valid untuk Testing:\n• SPJ001, SPJ002, SPJ003\n• TEST123, TEST456\n• 12345, 67890\n• ABCDEF, GHIJKL`, 
-                            true);
+                        this.showErrorModal(code);
                     }
                 }, 1000); 
             }
@@ -564,6 +576,100 @@
                 } else {
                     $('#modal-close').hide();
                 }
+                
+                $('#scan-modal').removeClass('hidden');
+                
+                $('#scan-modal').css('opacity', '0').animate({'opacity': '1'}, 300);
+                $('#scan-modal .bg-white').css('transform', 'scale(0.8)').animate({
+                    'transform': 'scale(1)'
+                }, 300);
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+
+            showSuccessModal(code, tanggal, waktu) {
+                // Custom success modal dengan UI yang lebih keren
+                const successIcon = `
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-xl mb-4">
+                        <i class="w-12 h-12 text-white" data-lucide="check-circle"></i>
+                    </div>
+                `;
+                
+                const successContent = `
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 mb-6 border border-green-200">
+                        <div class="flex items-center justify-center mb-3">
+                            <div class="bg-green-100 rounded-lg px-3 py-1">
+                                <span class="text-green-800 font-mono font-bold text-lg">${code}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="bg-white rounded-lg p-3 text-center border border-green-100">
+                                <div class="text-green-600 font-medium mb-1">Status</div>
+                                <div class="flex items-center justify-center">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                    <span class="text-gray-700 font-semibold">Aktif</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg p-3 text-center border border-green-100">
+                                <div class="text-green-600 font-medium mb-1">Waktu Scan</div>
+                                <div class="text-gray-700 font-semibold">${waktu}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 bg-white rounded-lg p-3 border border-green-100">
+                            <div class="text-green-600 font-medium mb-1 text-center">Tanggal</div>
+                            <div class="text-gray-700 font-semibold text-center text-sm">${tanggal}</div>
+                        </div>
+                    </div>
+                `;
+
+                $('#modal-icon').html(successIcon);
+                $('#modal-title').html('<span class="text-2xl">🎉 Scan Berhasil!</span>');
+                $('#modal-message').html(successContent);
+                $('#modal-close').html('<i class="w-5 h-5 mr-2" data-lucide="check"></i>Selesai').show();
+                
+                $('#scan-modal').removeClass('hidden');
+                
+                $('#scan-modal').css('opacity', '0').animate({'opacity': '1'}, 300);
+                $('#scan-modal .bg-white').css('transform', 'scale(0.8)').animate({
+                    'transform': 'scale(1)'
+                }, 300);
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+
+            showErrorModal(code) {
+                // Custom error modal dengan UI yang lebih keren
+                const errorIcon = `
+                    <div class="w-24 h-24 mx-auto bg-gradient-to-r from-red-400 to-rose-500 rounded-full flex items-center justify-center shadow-xl mb-4">
+                        <i class="w-12 h-12 text-white" data-lucide="x-circle"></i>
+                    </div>
+                `;
+                
+                const errorContent = `
+                    <div class="bg-gradient-to-r from-red-50 to-rose-50 rounded-xl p-4 mb-4 border border-red-200">
+                        <div class="flex items-center justify-center mb-3">
+                            <div class="bg-red-100 rounded-lg px-3 py-1">
+                                <span class="text-red-800 font-mono font-bold">${code}</span>
+                            </div>
+                        </div>
+                        <div class="text-center text-red-700">
+                            <div class="font-semibold mb-1">Kode SPJ tidak ditemukan</div>
+                            <div class="text-sm opacity-75">Silakan periksa kembali kode yang Anda masukkan</div>
+                        </div>
+                    </div>
+                `;
+
+                $('#modal-icon').html(errorIcon);
+                $('#modal-title').html('<span class="text-xl">❌ SPJ Tidak Ditemukan</span>');
+                $('#modal-message').html(errorContent);
+                $('#modal-close').html('<i class="w-5 h-5 mr-2" data-lucide="arrow-left"></i>Coba Lagi').show();
                 
                 $('#scan-modal').removeClass('hidden');
                 
