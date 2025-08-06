@@ -25,4 +25,11 @@ public class AdminController : Controller
     {
         return View("~/Views/Admin/Transport/SpjAdmin/History/Index.cshtml");
     }
+
+    [HttpGet("history/details/{id}")]
+    public IActionResult Details(int id)
+    {
+        ViewData["Id"] = id;
+        return View("~/Views/Admin/Transport/SpjAdmin/History/Details.cshtml");
+    }
 }

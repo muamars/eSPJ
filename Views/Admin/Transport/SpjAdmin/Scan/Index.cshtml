@@ -93,26 +93,12 @@
                 </div>
             </div>
 
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
-                <div class="flex items-start">
-                    <i class="w-4 h-4 text-gray-600 mr-2 mt-0.5" data-lucide="lightbulb"></i>
-                    <div class="text-gray-700">
-                        <p class="font-medium mb-1">Tips Scanning:</p>
-                        <ul class="text-xs space-y-1">
-                            <li>• Pastikan QR code dalam pencahayaan yang cukup</li>
-                            <li>• Jaga jarak 15-30cm dari kamera</li>
-                            <li>• Arahkan kamera secara tegak lurus ke QR code</li>
-                            <li>• Pastikan QR code tidak buram atau rusak</li>
-                            <li>• <strong>Klik "Izinkan/Allow" saat browser meminta akses kamera</strong></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="border-t pt-4">
             <h3 class="text-gray-700 font-medium mb-3">Atau input manual:</h3>
             <form id="manual-form" method="post" action="@Url.Action("ProcessScan", "Scan")">
+                @Html.AntiForgeryToken()
                 <div class="flex gap-2">
                     <input type="text" 
                            id="manual-barcode" 
@@ -152,7 +138,23 @@
     <partial name="~/Views/Admin/Transport/SpjAdmin/Shared/Components/_Navigation.cshtml" />
 </div>
 
+
+<div id="scan-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+    <div class="bg-white py-4 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-100">
+        <div class="p-8 text-center">
+            <div id="modal-icon" class="mx-auto mb-6">
+            </div>
+            <h3 id="modal-title" class="text-xl font-bold mb-3 text-gray-800"></h3>
+            <p id="modal-message" class="text-gray-600 mb-6 leading-relaxed"></p>
+            <button id="modal-close" class="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                OK
+            </button>
+        </div>
+    </div>
+</div>
+
 <register-block dynamic-section="scripts" key="jsScan">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" type="text/javascript"></script>
     
     <script>
@@ -196,6 +198,13 @@
                 this.confirmBtn.addEventListener('click', () => this.confirmScan());
                 this.retryBtn.addEventListener('click', () => this.retryScan());
                 this.manualForm.addEventListener('submit', (e) => this.handleManualSubmit(e));
+                
+                $('#modal-close').on('click', () => this.hideModal());
+                $('#scan-modal').on('click', (e) => {
+                    if (e.target.id === 'scan-modal') {
+                        this.hideModal();
+                    }
+                });
             }
 
             checkBrowserSupport() {
@@ -326,13 +335,13 @@
             handleBarcodeDetected(decodedText, decodedResult) {
                 if (decodedText && decodedText.length >= 5) {
                     this.flashSuccess();
+                    this.playSuccessSound();
+                    this.vibrate();
                     
                     this.detectedCode = decodedText;
-                    this.showResult(decodedText);
-                    this.stopScanner(); 
-                    this.playSuccessSound();
+                    this.stopScanner();
                     
-                    this.vibrate();
+                    this.processScanCode(decodedText);
                 }
             }
 
@@ -368,9 +377,44 @@
 
             confirmScan() {
                 if (this.detectedCode) {
-                    this.manualInput.value = this.detectedCode;
-                    this.manualForm.submit();
+                    this.processScanCode(this.detectedCode);
                 }
+            }
+
+            processScanCode(code) {
+                this.showModal('loading', 'Memproses...', 'Sedang memverifikasi kode SPJ...', false);
+                
+                $.ajax({
+                    url: '@Url.Action("ProcessScan", "Scan")', // nanti tinggal ganti aja yaa
+                    type: 'POST',
+                    data: {
+                        barcode: code
+                    },
+                    success: (response) => {
+                        if (response.success) {
+                            this.showModal('success', 'Scan Berhasil!', 'SPJ berhasil ditemukan dan diproses.', true);
+                            setTimeout(() => {
+                                this.hideResult();
+                                this.manualInput.value = '';
+                            }, 2000);
+                        } else {
+                            this.showModal('error', 'SPJ Tidak Ditemukan', response.message || 'Kode SPJ tidak ditemukan dalam database.', true);
+                        }
+                    },
+                    error: (xhr, status, error) => {
+                        let errorMessage = 'Terjadi kesalahan saat memproses scan.';
+                        
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else if (xhr.status === 404) {
+                            errorMessage = 'SPJ tidak ditemukan dalam database.';
+                        } else if (xhr.status === 500) {
+                            errorMessage = 'Terjadi kesalahan server. Silakan coba lagi.';
+                        }
+                        
+                        this.showModal('error', 'Error', errorMessage, true);
+                    }
+                });
             }
 
             async retryScan() {
@@ -389,18 +433,20 @@
             }
 
             handleManualSubmit(e) {
+                e.preventDefault();
+                
                 const code = this.manualInput.value.trim();
                 if (!code) {
-                    e.preventDefault();
-                    this.showError('Silakan masukkan kode SPJ.');
+                    this.showModal('error', 'Input Kosong', 'Silakan masukkan kode SPJ.', true);
                     return;
                 }
                 
                 if (code.length < 5) {
-                    e.preventDefault();
-                    this.showError('Kode SPJ minimal 5 karakter.');
+                    this.showModal('error', 'Kode Tidak Valid', 'Kode SPJ minimal 5 karakter.', true);
                     return;
                 }
+                
+                this.processScanCode(code);
             }
 
             showLoading() {
@@ -454,9 +500,54 @@
                 } catch (e) {
                 }
             }
+
+            showModal(type, title, message, showCloseButton = true) {
+                const iconHtml = {
+                    'success': '<div class="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center shadow-lg"><i class="w-10 h-10 text-green-600" data-lucide="check-circle"></i></div>',
+                    'error': '<div class="w-20 h-20 mx-auto bg-red-100 rounded-full flex items-center justify-center shadow-lg"><i class="w-10 h-10 text-red-600" data-lucide="x-circle"></i></div>',
+                    'loading': '<div class="w-20 h-20 mx-auto bg-blue-100 rounded-full flex items-center justify-center shadow-lg"><div class="loading-spinner-modal"></div></div>'
+                };
+
+                $('#modal-icon').html(iconHtml[type] || iconHtml['error']);
+                $('#modal-title').text(title);
+                $('#modal-message').text(message);
+                
+                if (showCloseButton) {
+                    $('#modal-close').show();
+                } else {
+                    $('#modal-close').hide();
+                }
+                
+                $('#scan-modal').removeClass('hidden');
+                
+                $('#scan-modal').css('opacity', '0').animate({'opacity': '1'}, 300);
+                $('#scan-modal .bg-white').css('transform', 'scale(0.8)').animate({
+                    'transform': 'scale(1)'
+                }, 300);
+                
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+
+            hideModal() {
+                $('#scan-modal').animate({'opacity': '0'}, 200, function() {
+                    $('#scan-modal').addClass('hidden');
+                    $('#scan-modal').css('opacity', '');
+                    $('#scan-modal .bg-white').css('transform', '');
+                });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("RequestVerificationToken", $('input[name="__RequestVerificationToken"]').val());
+                    }
+                }
+            });
+            
             function waitForLibrary() {
                 if (typeof Html5Qrcode !== 'undefined') {
                     new BarcodeScanner();

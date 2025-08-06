@@ -6,10 +6,10 @@
 <div class="max-w-sm mx-auto bg-gray-50 min-h-screen">
     <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 sticky top-0 z-10 shadow-lg">
         <div class="flex items-center justify-between">
-            <a href="@Url.Action("Index", "Home")" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200">
+            <a href="@Url.Action("Index", "Admin")" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200">
                 <i class="w-5 h-5" data-lucide="chevron-left"></i>
             </a>
-            <h1 class="text-lg font-bold">Riwayat Perjalanan</h1>
+            <h1 class="text-lg font-bold">Riwayat SPJ</h1>
             <div class="w-9"></div>
         </div>
     </div>
@@ -19,6 +19,7 @@
         {
             new {
                 Id = 1,
+                Nama = "Yusuf",
                 NoSpj = "SPJ/07-2025/PKM/000478",
                 Plat = "B 5678 ABC",
                 Kode = "JRC 007",
@@ -29,6 +30,7 @@
             },
             new {
                 Id = 2,
+                Nama = "Ahmad Rizki",
                 NoSpj = "SPJ/07-2025/PKM/000476",
                 Plat = "B 9632 TOR",
                 Kode = "JRC 005",
@@ -39,6 +41,7 @@
             },
             new {
                 Id = 3,
+                Nama = "Siti Aminah",
                 NoSpj = "SPJ/07-2025/PKM/000477",
                 Plat = "B 1234 XYZ",
                 Kode = "JRC 006",
@@ -49,6 +52,7 @@
             },
             new {
                 Id = 4,
+                Nama = "Budi Santoso",
                 NoSpj = "SPJ/07-2025/PKM/000479",
                 Plat = "B 9876 DEF",
                 Kode = "JRC 008",
@@ -59,6 +63,7 @@
             },
             new {
                 Id = 5,
+                Nama = "Dewi Lestari",
                 NoSpj = "SPJ/07-2025/PKM/000480",
                 Plat = "B 4321 GHI",
                 Kode = "JRC 009",
@@ -73,15 +78,15 @@
     <div class="px-4 py-4 space-y-3">
         @foreach (var spj in spjList)
         {
-            <a href="@Url.Action("Details", "History", new { id = spj.Id })" class="block">
+            <a href="@Url.Action("Details", "Admin", new { id = spj.Id })" class="block">
                 <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-lg hover:border-orange-200 transition-all duration-300 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-orange-500"></div>
                 
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
-                            <div class="w-2 h-2 bg-orange-400 rounded-full"></div>
-                            <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">No. SPJ</span>
+                             <i class="w-4 h-4 text-green-600" data-lucide="user"></i>
+                            <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">@spj.Nama</span>
                         </div>
                         <div class="font-bold text-gray-900 text-sm">@spj.NoSpj</div>
                     </div>
