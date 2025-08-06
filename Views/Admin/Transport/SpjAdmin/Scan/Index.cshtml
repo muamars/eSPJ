@@ -462,7 +462,6 @@
                             minute: '2-digit'
                         });
                         
-                        // Custom modal untuk success dengan HTML yang lebih rapi
                         this.showSuccessModal(code, tanggal, waktu);
                         
                         setTimeout(() => {
@@ -584,7 +583,6 @@
                     'transform': 'scale(1)'
                 }, 300);
                 
-                // Auto hide untuk loading modal setelah 3 detik jika tidak ada tombol
                 if (!showCloseButton && type === 'loading') {
                     setTimeout(() => {
                         this.hideModal();
@@ -593,7 +591,6 @@
             }
 
             showSuccessModal(code, tanggal, waktu) {
-                // Custom success modal dengan UI yang lebih keren
                 const successIcon = `
                     <div class="w-28 h-28 mx-auto bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-xl mb-6 animate-pulse">
                         <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -648,14 +645,12 @@
                     'transform': 'scale(1)'
                 }, 300);
                 
-                // Auto hide setelah 2 detik
                 setTimeout(() => {
                     this.hideModal();
                 }, 2000);
             }
 
             showErrorModal(code) {
-                // Custom error modal dengan UI yang lebih keren
                 const errorIcon = `
                     <div class="w-28 h-28 mx-auto bg-gradient-to-r from-red-400 to-rose-500 rounded-full flex items-center justify-center shadow-xl mb-6 animate-pulse">
                         <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -719,7 +714,6 @@
                     'transform': 'scale(1)'
                 }, 300);
                 
-                // Auto hide setelah 2 detik
                 setTimeout(() => {
                     this.hideModal();
                 }, 2000);
