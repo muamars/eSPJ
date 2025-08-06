@@ -384,6 +384,10 @@
             processScanCode(code) {
                 this.showModal('loading', 'Memproses...', 'Sedang memverifikasi kode SPJ...', false);
                 
+                // Testing mode - uncomment untuk testing tanpa backend
+                // this.mockResponse(code);
+                // return;
+                
                 $.ajax({
                     url: '@Url.Action("ProcessScan", "Scan")', // nanti tinggal ganti aja yaa
                     type: 'POST',
@@ -415,6 +419,24 @@
                         this.showModal('error', 'Error', errorMessage, true);
                     }
                 });
+            }
+
+            // Mock response untuk testing
+            mockResponse(code) {
+                setTimeout(() => {
+                    // Simulasi SPJ yang ada
+                    const validCodes = ['SPJ001', 'SPJ002', 'TEST123', '12345', 'ABCDEF'];
+                    
+                    if (validCodes.includes(code.toUpperCase())) {
+                        this.showModal('success', 'Scan Berhasil!', `SPJ ${code} berhasil ditemukan dan diproses.`, true);
+                        setTimeout(() => {
+                            this.hideResult();
+                            this.manualInput.value = '';
+                        }, 2000);
+                    } else {
+                        this.showModal('error', 'SPJ Tidak Ditemukan', `Kode SPJ "${code}" tidak ditemukan dalam database.`, true);
+                    }
+                }, 1500); // Simulasi delay network
             }
 
             async retryScan() {
