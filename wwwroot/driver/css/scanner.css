@@ -1,3 +1,94 @@
+/* Modal animations and enhancements */
+#scan-modal {
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+#scan-modal .bg-white {
+  transform-origin: center center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Enhanced modal auto-hide animation */
+.modal-auto-hide {
+  animation: modalAutoHide 0.4s ease-in-out;
+}
+
+@keyframes modalAutoHide {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Success modal specific animations */
+.success-gradient-bg {
+  background: linear-gradient(135deg, #10b981, #059669, #047857);
+  animation: gradientShift 2s ease-in-out;
+}
+
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Error modal specific animations */
+.error-gradient-bg {
+  background: linear-gradient(135deg, #ef4444, #dc2626, #b91c1c);
+  animation: gradientShift 2s ease-in-out;
+}
+
+/* Enhanced pulse animation for icons */
+.icon-pulse {
+  animation: iconPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Card shadow effects */
+.card-shadow-success {
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
+}
+
+.card-shadow-error {
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);
+}
+
+/* Responsive modal improvements */
+@media (max-width: 640px) {
+  #scan-modal .bg-white {
+    margin: 16px;
+    max-width: calc(100vw - 32px);
+  }
+
+  #scan-modal .bg-white .space-y-4 > div {
+    margin-bottom: 12px;
+  }
+}
+
 .scanner-container {
   position: relative;
   background: #1a1a1a;
