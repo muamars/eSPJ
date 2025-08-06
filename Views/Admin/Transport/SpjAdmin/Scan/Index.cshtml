@@ -333,7 +333,11 @@
             }
 
             handleBarcodeDetected(decodedText, decodedResult) {
+                console.log(`QR Code terdeteksi: "${decodedText}"`);
+                console.log(`Panjang kode: ${decodedText.length}`);
+                
                 if (decodedText && decodedText.length >= 5) {
+                    console.log(`✅ Kode valid, memproses: ${decodedText}`);
                     this.flashSuccess();
                     this.playSuccessSound();
                     this.vibrate();
@@ -342,6 +346,8 @@
                     this.stopScanner();
                     
                     this.processScanCode(decodedText);
+                } else {
+                    console.log(`❌ Kode terlalu pendek: ${decodedText}`);
                 }
             }
 
@@ -384,12 +390,14 @@
             processScanCode(code) {
                 this.showModal('loading', 'Memproses...', 'Sedang memverifikasi kode SPJ...', false);
                 
-                // Testing mode - uncomment untuk testing tanpa backend
-                // this.mockResponse(code);
-                // return;
+                // Testing mode - uncomment kalau testing udah selesai
+                this.mockResponse(code);
+                return;
                 
+                // ini bagian ajax yang asli
+                /*
                 $.ajax({
-                    url: '@Url.Action("ProcessScan", "Scan")', // nanti tinggal ganti aja yaa
+                    url: @Url.Action("ProcessScan", "Scan")', // nanti tinggal ganti aja yaa
                     type: 'POST',
                     data: {
                         barcode: code
@@ -419,24 +427,41 @@
                         this.showModal('error', 'Error', errorMessage, true);
                     }
                 });
+                */
             }
 
             // Mock response untuk testing
             mockResponse(code) {
+                console.log(`Testing scan untuk kode: ${code}`);
+                
                 setTimeout(() => {
-                    // Simulasi SPJ yang ada
-                    const validCodes = ['SPJ001', 'SPJ002', 'TEST123', '12345', 'ABCDEF'];
+                    const validCodes = [
+                        'SPJ001', 'SPJ002', 'SPJ003', 'SPJ004', 'SPJ005',
+                        'TEST123', 'TEST456', 'TEST789',
+                        '12345', '67890', '11111', '22222',
+                        'ABCDEF', 'GHIJKL', 'MNOPQR'
+                    ];
                     
-                    if (validCodes.includes(code.toUpperCase())) {
-                        this.showModal('success', 'Scan Berhasil!', `SPJ ${code} berhasil ditemukan dan diproses.`, true);
+                    const isValid = validCodes.some(validCode => 
+                        validCode.toLowerCase() === code.toLowerCase()
+                    );
+                    
+                    if (isValid) {
+                        console.log(`✅ Kode ${code} VALID - menampilkan success`);
+                        this.showModal('success', 'Scan Berhasil!', 
+                            `SPJ "${code}" berhasil ditemukan dan diproses.\n\n📋 Detail SPJ:\n• Kode: ${code}\n• Status: Aktif\n• Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 
+                            true);
                         setTimeout(() => {
                             this.hideResult();
                             this.manualInput.value = '';
-                        }, 2000);
+                        }, 3000);
                     } else {
-                        this.showModal('error', 'SPJ Tidak Ditemukan', `Kode SPJ "${code}" tidak ditemukan dalam database.`, true);
+                        console.log(`❌ Kode ${code} TIDAK VALID - menampilkan error`);
+                        this.showModal('error', 'SPJ Tidak Ditemukan', 
+                            `Kode SPJ "${code}" tidak ditemukan dalam database.\n\n✅ Kode Valid untuk Testing:\n• SPJ001, SPJ002, SPJ003\n• TEST123, TEST456\n• 12345, 67890\n• ABCDEF, GHIJKL`, 
+                            true);
                     }
-                }, 1500); // Simulasi delay network
+                }, 1000); 
             }
 
             async retryScan() {
