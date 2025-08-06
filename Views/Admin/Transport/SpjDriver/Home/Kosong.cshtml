@@ -1,0 +1,221 @@
+@{
+    Layout = "~/Views/Admin/Transport/SpjDriver/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Home Page";
+}
+
+ <div class="container max-w-sm mx-auto bg-white min-h-screen">
+    
+        <div class="absolute top-0 max-w-sm container mx-auto bg-orange-500 text-white rounded-br-[125px] h-[250px] flex flex-row justify-between items-start px-6 py-6 shadow-lg z-20">
+            <div class="flex flex-col">
+                <h1 class="text-md font-bold leading-tight text-white">Bonny Agung Putra</h1>
+                <p class="text-xs opacity-90 font-medium text-orange-100">Driver UPST</span></p>
+                <div class="mt-5 flex items-center gap-2">
+                    <i class="w-4 h-4 text-white" data-lucide="map-pin"></i>
+                    <span class="text-sm opacity-90">Lokasi Anda:</span>
+                </div>
+                <p id="userLocation" class="font-semibold text-xs tracking-wide cursor-pointer underline text-white hover:text-orange-200 transition">
+                    Mendeteksi lokasi...
+                </p>
+            </div>
+            <div class="flex items-center justify-center">
+                <div class="relative flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 rounded-full border-3 border-white overflow-hidden shadow-md flex items-center justify-center cursor-pointer group" id="profileMenuButton">
+                        <i class="w-8 h-8 text-white" data-lucide="user"></i>
+                    </div>
+                    <div id="profileMenuDropdown" class="absolute top-12 right-0 mt-2 w-32 bg-white rounded shadow-lg py-2 z-50 hidden">
+                        <form method="post" asp-controller="Auth" asp-action="Logout">
+                            <button type="submit" class="hover:cursor-pointer flex items-center gap-2 w-full text-left px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 transition rounded-md">
+                                <i class="w-4 h-4" data-lucide="log-out"></i>
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+             
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 mx-4 px-6 py-12 mt-40 rounded-3xl relative overflow-hidden shadow-2xl z-21 border border-slate-200">
+            <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+                <div class="absolute top-4 right-8 w-6 h-6 bg-orange-300 rounded-full opacity-60 animate-bounce" style="animation-delay: 0.5s;"></div>
+                <div class="absolute top-12 left-12 w-4 h-4 bg-blue-400 rounded-full opacity-40 animate-pulse" style="animation-delay: 1s;"></div>
+                <div class="absolute bottom-8 left-8 w-5 h-5 bg-indigo-300 rounded-full opacity-50 animate-bounce" style="animation-delay: 1.5s;"></div>
+                <div class="absolute bottom-16 right-16 w-3 h-3 bg-slate-400 rounded-full opacity-30 animate-pulse" style="animation-delay: 2s;"></div>
+            </div>
+            
+            <div class="relative z-10 text-center">
+                <div class="w-24 h-24 mx-auto mb-6 relative">
+                    <div class="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center">
+                            <i class="w-10 h-10 text-orange-500" data-lucide="clipboard-list"></i>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 border-4 border-orange-300 rounded-full animate-ping opacity-30"></div>
+                </div>
+                
+                <div class="space-y-4">
+                    <h2 class="text-xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
+                        Belum Ada SPJ
+                    </h2>
+                    <p class="text-sm text-slate-600 leading-relaxed px-4 mb-2">
+                        Anda belum memiliki <span class="font-semibold text-orange-600">Surat Perintah Jalan</span> yang aktif saat ini.
+                    </p>
+                </div>
+
+                <div class="bg-white/70 backdrop-blur-sm border border-white/30 rounded-2xl p-5 mb-6 text-left">
+                    <div class="space-y-2 text-xs text-slate-600">
+                        <div class="flex items-start gap-2">
+                            <div class="w-1 h-1 bg-orange-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                            <p>SPJ akan diterbitkan oleh admin sesuai jadwal kerja</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <div class="w-1 h-1 bg-orange-400 rounded-full mt-1.5 flex-shrink-0"></div>
+                            <p>Periksa koneksi internet dan aktifkan lokasi GPS</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="refreshButton" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 mx-auto transform hover:scale-105">
+                    <i class="w-4 h-4" data-lucide="refresh-cw" id="refreshIcon"></i>
+                    <span id="refreshText">Refresh Halaman</span>
+                </button>
+            </div>
+        </div>
+
+        <partial name="~/Views/Admin/Transport/SpjDriver/Shared/Components/_NavigationAdmin.cshtml" />
+      
+    </div>
+
+
+<register-block dynamic-section="scripts" key="jsHomeKosong">
+<style>
+    @@keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @@keyframes shimmer {
+        0% { background-position: -200px 0; }
+        100% { background-position: calc(200px + 100%) 0; }
+    }
+    
+    .float-animation {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .shimmer {
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        background-size: 200px 100%;
+        animation: shimmer 2s infinite;
+    }
+    
+    .refresh-spin {
+        animation: spin 1s linear infinite;
+    }
+    
+    @@keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const userLocationEl = document.getElementById("userLocation");
+
+    function reverseGeocode(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+                const address = data.display_name || `${lat}, ${lng}`;
+                userLocationEl.textContent = address;
+                localStorage.setItem("user_latitude", lat);
+                localStorage.setItem("user_longitude", lng);
+                localStorage.setItem("user_address", address);
+            })
+            .catch(() => {
+                userLocationEl.textContent = `${lat}, ${lng}`;
+            });
+    }
+
+    function getLocationUpdate() {
+        if ("geolocation" in navigator) {
+            userLocationEl.textContent = "Mendeteksi lokasi baru...";
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const lat = position.coords.latitude.toFixed(6);
+                    const lng = position.coords.longitude.toFixed(6);
+                    reverseGeocode(lat, lng);
+                },
+                function () {
+                    userLocationEl.textContent = "Lokasi tidak diizinkan";
+                }
+            );
+        } else {
+            userLocationEl.textContent = "Browser tidak mendukung lokasi";
+        }
+    }
+
+    const savedAddress = localStorage.getItem("user_address");
+    if (savedAddress) {
+        userLocationEl.textContent = savedAddress;
+    } else {
+        getLocationUpdate();
+    }
+
+    userLocationEl.addEventListener("click", function () {
+        getLocationUpdate();
+    });
+
+    const refreshBtn = document.getElementById('refreshButton');
+    const refreshIcon = document.getElementById('refreshIcon');
+    const refreshText = document.getElementById('refreshText');
+    
+    if (refreshBtn) {
+        refreshBtn.addEventListener("click", function() {
+            refreshIcon.style.animation = 'spin 1s linear infinite';
+            refreshText.textContent = 'Memuat...';
+            refreshBtn.disabled = true;
+            refreshBtn.style.opacity = '0.8';
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        });
+    }
+
+    const mainIcon = document.querySelector('[data-lucide="clipboard-list"]');
+    if (mainIcon) {
+        mainIcon.closest('.w-24').classList.add('float-animation');
+    }
+
+    const mainCard = document.querySelector('.bg-gradient-to-br');
+    if (mainCard) {
+        mainCard.style.opacity = '0';
+        mainCard.style.transform = 'translateY(20px)';
+        mainCard.style.transition = 'all 0.6s ease-out';
+        
+        setTimeout(() => {
+            mainCard.style.opacity = '1';
+            mainCard.style.transform = 'translateY(0)';
+        }, 100);
+    }
+});
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("profileMenuButton");
+        const dropdown = document.getElementById("profileMenuDropdown");
+
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            dropdown.classList.toggle("hidden");
+        });
+
+        document.addEventListener("click", function () {
+            dropdown.classList.add("hidden");
+        });
+    });
+</script>
+</register-block>
